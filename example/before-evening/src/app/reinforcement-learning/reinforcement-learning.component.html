@@ -1,0 +1,121 @@
+<div class="tfjs-example-container centered-container">
+  <section class='title-area'>
+    <h1>TensorFlow.js: Reinforcement Learning</h1>
+    <p class='subtitle'>Train a model to make a car climb a hill using reinforcement learning.</p>
+  </section>
+
+  <section>
+    <p class='section-head'>Instructions</p>
+    <p></p>
+    <ul>
+      <li>
+        Choose a hidden layer size and click "Create Model".
+      </li>
+      <li>
+        Select training parameters and then click "Train".
+      </li>
+      <li>
+        Note that while the model is training it periodically saves a copy of itself
+        to local browser storage, this mean you can refresh the page and continue training
+        from the last save point. If at any point you want to start training from scratch, click
+        "Delete stored Model".
+      </li>
+      <li>
+        Once the model has finished training you can click "Test" to see how many 'steps' the agent
+        can balance the pole for. You can also click 'Stop' to pause the training after the current iteration
+        ends if you want to test the model sooner.
+      </li>
+      <li>During training and testing a small simulation of the agent behaviour will be rendered.</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class='section-head'>Status</p>
+    <div>
+      <span id="app-status">Standing by.</span>
+    </div>
+
+    <div>
+      <p class='section-head'>Initialize Model</p>
+      <div class="with-cols">
+        <div class="with-rows init-model">
+          <div class="input-div with-rows">
+            <label class="input-label">Hidden layer size(s) (e.g.: "256", "32,64"):</label>
+            <input [(ngModel)]="hiddenLayerSize"
+                   [disabled]="disabledStatus.hiddenLayerSizesInput"/>
+          </div>
+          <button (click)="createModel()"
+                  [disabled]="disabledStatus.createModelButton">Create model</button>
+        </div>
+        <div class="with-rows init-model">
+          <div class="input-div with-rows">
+            <label class="input-label">Locally-stored model</label>
+            <input [(ngModel)]="storedModelStatus" disabled="true" readonly="true"/>
+          </div>
+          <button (click)="deleteStoredModel()"
+                  [disabled]="disabledStatus.deleteStoredModelButton">
+            Delete stored model
+          </button>
+        </div>
+      </div>
+
+      <p class='section-head'>Training Parameters</p>
+      <div class="with-rows">
+        <div class="input-div">
+          <label class="input-label">Number of iterations:</label>
+          <input [(ngModel)]="numberOfIterations"/>
+        </div>
+        <div class="input-div">
+          <label class="input-label">Games per iteration:</label>
+          <input [(ngModel)]="gamesPerIteration"/>
+        </div>
+        <div class="input-div">
+          <label class="input-label">Max. steps per game:</label>
+          <input [(ngModel)]="maxStepsPerGame"/>
+        </div>
+        <div class="input-div">
+          <label class="input-label">Reward discount rate:</label>
+          <input [(ngModel)]="discountRate"/>
+        </div>
+        <div class="input-div">
+          <label class="input-label">Render during training:</label>
+          <input type="checkbox" id="render-during-training"/>
+          <span class="note">Uncheck me to speed up training.</span>
+        </div>
+
+        <div class="buttons-section">
+          <button (click)="train()"
+                  [disabled]="disabledStatus.trainButton">
+            {{ trainButtonText }}
+          </button>
+          <button (click)="test()"
+                  [disabled]="disabledStatus.testButton">
+            Test
+          </button>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <section>
+    <p class='section-head'>Training Progress</p>
+    <div class="with-rows">
+      <div class="status">
+        <label id="train-status">Iteration #: {{iterationStatus}}</label>
+        <progress [value]="iterationProgress" max="100"></progress>
+      </div>
+      <div class="status">
+        <label id="iteration-status">Game #: {{gameStatus}}</label>
+        <progress [value]="gameProgress" max="100"></progress>
+      </div>
+
+      <div class="status">
+        <label>Best position:</label>
+        <span class="status-span">{{ bestPositionText }}</span>
+      </div>
+      <div #stepsContainer></div>
+    </div>
+  </section>
+</div>

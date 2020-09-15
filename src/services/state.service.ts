@@ -7,6 +7,8 @@ import {Stats} from "../lib/stats";
 import {Utils} from "../lib/utils";
 
 import {Render} from "./render";
+import {Subject} from "rxjs";
+import {StateUpdate} from "../interfaces/state.interfaces";
 
 export class StateService {
   public fps: number;                      // how many 'update' frames per second
@@ -104,7 +106,7 @@ export class StateService {
     this.decel = -this.maxSpeed / 5;             // 'natural' deceleration rate when neither accelerating, nor braking
     this.offRoadDecel = -this.maxSpeed / 2;             // off road deceleration is somewhere in between
     this.offRoadLimit = this.maxSpeed / 4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
-    this.totalCars = 200;                     // total number of cars on the road
+    this.totalCars = 0;                     // total number of cars on the road
     this.currentLapTime = 0;                       // current lap time
     this.lastLapTime = null;                    // last lap time
 
@@ -121,12 +123,12 @@ export class StateService {
     };
   }
 
-  public update(dt) {
+  public update(dt: number, stateUpdater: Subject<StateUpdate>) {
     let n, car, carW, sprite, spriteW;
-    const playerSegment = Render.findSegment(this.segments, this.segmentLength, this.position+this.playerZ);
-    const playerW       = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
-    const speedPercent  = this.speed/this.maxSpeed;
-    const dx            = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+    const playerSegment = Render.findSegment(this.segments, this.segmentLength, this.position + this.playerZ);
+    const playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
+    const speedPercent = this.speed / this.maxSpeed;
+    const dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
     const startPosition = this.position;
 
     this.updateCars(dt, playerSegment, playerW);
@@ -135,8 +137,7 @@ export class StateService {
 
     if (this.keyLeft) {
       this.playerX = this.playerX - dx;
-    }
-    else if (this.keyRight) {
+    } else if (this.keyRight) {
       this.playerX = this.playerX + dx;
     }
 
@@ -144,11 +145,9 @@ export class StateService {
 
     if (this.keyFaster) {
       this.speed = Utils.accelerate(this.speed, this.accel, dt);
-    }
-    else if (this.keySlower) {
+    } else if (this.keySlower) {
       this.speed = Utils.accelerate(this.speed, this.breaking, dt);
-    }
-    else {
+    } else {
       this.speed = Utils.accelerate(this.speed, this.decel, dt);
     }
 
@@ -159,23 +158,23 @@ export class StateService {
         this.speed = Utils.accelerate(this.speed, this.offRoadDecel, dt);
       }
 
-      for(n = 0 ; n < playerSegment.sprites.length ; n++) {
-        sprite  = playerSegment.sprites[n];
+      for (n = 0; n < playerSegment.sprites.length; n++) {
+        sprite = playerSegment.sprites[n];
         spriteW = sprite.source.w * SPRITES.SCALE;
-        if (Utils.overlap(this.playerX, playerW, sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
-          this.speed = this.maxSpeed/5;
+        if (Utils.overlap(this.playerX, playerW, sprite.offset + spriteW / 2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
+          this.speed = this.maxSpeed / 5;
           this.position = Utils.increase(playerSegment.p1.world.z, -this.playerZ, this.trackLength); // stop in front of sprite (at front of segment)
           break;
         }
       }
     }
 
-    for(n = 0 ; n < playerSegment.cars.length ; n++) {
-      car  = playerSegment.cars[n];
+    for (n = 0; n < playerSegment.cars.length; n++) {
+      car = playerSegment.cars[n];
       carW = car.sprite.w * SPRITES.SCALE;
       if (this.speed > car.speed) {
         if (Utils.overlap(this.playerX, playerW, car.offset, carW, 0.8)) {
-          this.speed    = car.speed * (car.speed/this.speed);
+          this.speed = car.speed * (car.speed / this.speed);
           this.position = Utils.increase(car.z, -this.playerZ, this.trackLength);
           break;
         }
@@ -183,49 +182,55 @@ export class StateService {
     }
 
     this.playerX = Utils.limit(this.playerX, -3, 3);     // dont ever let it go too far out of bounds
-    this.speed   = Utils.limit(this.speed, 0, this.maxSpeed); // or exceed maxSpeed
+    this.speed = Utils.limit(this.speed, 0, this.maxSpeed); // or exceed maxSpeed
 
-    this.skyOffset  = Utils.increase(this.skyOffset,  this.skySpeed  * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
-    this.hillOffset = Utils.increase(this.hillOffset, this.hillSpeed * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
-    this.treeOffset = Utils.increase(this.treeOffset, this.treeSpeed * playerSegment.curve * (this.position-startPosition)/this.segmentLength, 1);
+    this.skyOffset = Utils.increase(this.skyOffset, this.skySpeed * playerSegment.curve * (this.position - startPosition) / this.segmentLength, 1);
+    this.hillOffset = Utils.increase(this.hillOffset, this.hillSpeed * playerSegment.curve * (this.position - startPosition) / this.segmentLength, 1);
+    this.treeOffset = Utils.increase(this.treeOffset, this.treeSpeed * playerSegment.curve * (this.position - startPosition) / this.segmentLength, 1);
 
     if (this.position > this.playerZ) {
       if (this.currentLapTime && (startPosition < this.playerZ)) {
-        this.lastLapTime    = this.currentLapTime;
+        this.lastLapTime = this.currentLapTime;
         this.currentLapTime = 0;
         if (this.lastLapTime <= Utils.toFloat(Dom.storage.fast_lap_time)) {
           Dom.storage.fast_lap_time = this.lastLapTime;
           this.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
           Dom.addClassName('fast_lap_time', 'fastest');
           Dom.addClassName('last_lap_time', 'fastest');
-        }
-        else {
+        } else {
           Dom.removeClassName('fast_lap_time', 'fastest');
           Dom.removeClassName('last_lap_time', 'fastest');
         }
         this.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
         Dom.show('last_lap_time');
-      }
-      else {
+      } else {
         this.currentLapTime += dt;
       }
     }
 
-    this.updateHud('speed',            5 * Math.round(this.speed/500));
+    this.updateHud('speed', 5 * Math.round(this.speed / 500));
     this.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
+
+    const next5Curve = [];
+    for (let index = 1; index < 6; index++) {
+      const curve = Render.findSegment(this.segments, this.segmentLength, this.position + this.playerZ + (index * this.segmentLength)).curve;
+      next5Curve.push(curve);
+    }
+
+    stateUpdater.next({playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve});
   }
 
   //-------------------------------------------------------------------------
 
   public updateCars(dt, playerSegment, playerW) {
     let n, car, oldSegment, newSegment;
-    for(n = 0 ; n < this.cars.length ; n++) {
-      car         = this.cars[n];
-      oldSegment  = Render.findSegment(this.segments, this.segmentLength, car.z);
-      car.offset  = car.offset + this.updateCarOffset(car, oldSegment, playerSegment, playerW);
-      car.z       = Utils.increase(car.z, dt * car.speed, this.trackLength);
+    for (n = 0; n < this.cars.length; n++) {
+      car = this.cars[n];
+      oldSegment = Render.findSegment(this.segments, this.segmentLength, car.z);
+      car.offset = car.offset + this.updateCarOffset(car, oldSegment, playerSegment, playerW);
+      car.z = Utils.increase(car.z, dt * car.speed, this.trackLength);
       car.percent = Utils.percentRemaining(car.z, this.segmentLength); // useful for interpolation during rendering phase
-      newSegment  = Render.findSegment(this.segments, this.segmentLength, car.z);
+      newSegment = Render.findSegment(this.segments, this.segmentLength, car.z);
       if (oldSegment != newSegment) {
         const index = oldSegment.cars.indexOf(car);
         oldSegment.cars.splice(index, 1);
@@ -242,8 +247,8 @@ export class StateService {
     if ((carSegment.index - playerSegment.index) > this.drawDistance)
       return 0;
 
-    for(i = 1 ; i < lookahead ; i++) {
-      segment = this.segments[(carSegment.index+i)%this.segments.length];
+    for (i = 1; i < lookahead; i++) {
+      segment = this.segments[(carSegment.index + i) % this.segments.length];
 
       if ((segment === playerSegment) && (car.speed > this.speed) && (Utils.overlap(this.playerX, playerW, car.offset, carW, 1.2))) {
         if (this.playerX > 0.5)
@@ -252,11 +257,11 @@ export class StateService {
           dir = 1;
         else
           dir = (car.offset > this.playerX) ? 1 : -1;
-        return dir * 1/i * (car.speed-this.speed)/this.maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
+        return dir * 1 / i * (car.speed - this.speed) / this.maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
       }
 
-      for(j = 0 ; j < segment.cars.length ; j++) {
-        otherCar  = segment.cars[j];
+      for (j = 0; j < segment.cars.length; j++) {
+        otherCar = segment.cars[j];
         otherCarW = otherCar.sprite.w * SPRITES.SCALE;
         if ((car.speed > otherCar.speed) && Utils.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2)) {
           if (otherCar.offset > 0.5)
@@ -265,7 +270,7 @@ export class StateService {
             dir = 1;
           else
             dir = (car.offset > otherCar.offset) ? 1 : -1;
-          return dir * 1/i * (car.speed-otherCar.speed)/this.maxSpeed;
+          return dir * 1 / i * (car.speed - otherCar.speed) / this.maxSpeed;
         }
       }
     }
@@ -289,12 +294,33 @@ export class StateService {
   }
 
   public formatTime(dt) {
-      const minutes = Math.floor(dt/60);
-      const seconds = Math.floor(dt - (minutes * 60));
-      const tenths  = Math.floor(10 * (dt - Math.floor(dt)));
-      if (minutes > 0)
-        return minutes + "." + (seconds < 10 ? "0" : "") + seconds + "." + tenths;
-      else
-        return seconds + "." + tenths;
-    }
+    const minutes = Math.floor(dt / 60);
+    const seconds = Math.floor(dt - (minutes * 60));
+    const tenths = Math.floor(10 * (dt - Math.floor(dt)));
+    if (minutes > 0)
+      return minutes + "." + (seconds < 10 ? "0" : "") + seconds + "." + tenths;
+    else
+      return seconds + "." + tenths;
+  }
+
+  public reset() {
+    this.skySpeed = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
+    this.hillSpeed = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
+    this.treeSpeed = 0.003;                   // background tree layer scroll speed when going around curve (or up hill)
+    this.skyOffset = 0;                       // current sky scroll offset
+    this.hillOffset = 0;                       // current hill scroll offset
+    this.treeOffset = 0;                       // current tree scroll offset
+    this.cameraHeight = 1000;                    // z height of camera
+    this.playerX = 0;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
+    this.position = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
+    this.speed = 0;                       // current speed
+    this.totalCars = 0;                     // total number of cars on the road
+    this.currentLapTime = 0;                       // current lap time
+    this.lastLapTime = null;                    // last lap time
+
+    this.keyLeft = false;
+    this.keyRight = false;
+    this.keyFaster = false;
+    this.keySlower = false;
+  }
 }

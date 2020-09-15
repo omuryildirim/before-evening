@@ -4,7 +4,7 @@ import {Utils} from "../lib/utils";
 import {Dom} from "./dom";
 
 export const Game = {  // a modified version of the game loop from my previous boulderdash game - see http://codeincomplete.com/posts/2011/10/25/javascript_boulderdash/#gameloop
-  run: function (options) {
+  run: (options) => {
     Game.loadImages(options.images, function (images) {
 
       options.ready(images); // tell caller to initialize itself because images are loaded and we're ready to rumble
@@ -22,19 +22,34 @@ export const Game = {  // a modified version of the game loop from my previous b
         dt = 0,
         gdt = 0;
 
-      function frame() {
+      const frame = () => {
         now = Utils.timestamp();
         dt = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
         gdt = gdt + dt;
-        while (gdt > step) {
-          gdt = gdt - step;
+
+        if (options.renderCanvas) {
+          while (gdt > step) {
+            gdt = gdt - step;
+            update(step);
+          }
+        } else {
           update(step);
         }
-        render();
+
+
+        if (options.renderCanvas) {
+          render();
+        }
         stats.update();
         last = now;
-        requestAnimationFrame(frame); // requestAnimationFrame(frame, canvas);
-      }
+        if (options.renderCanvas) {
+          requestAnimationFrame(frame); // requestAnimationFrame(frame, canvas);
+        } else {
+          setTimeout(() => {
+            frame();
+          }, 1);
+        }
+      };
 
       frame(); // lets get this party started
       Game.playMusic();

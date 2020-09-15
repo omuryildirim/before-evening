@@ -150,6 +150,7 @@ export class RoadHelper {
   }
 
   private resetSprites() {
+    return;
     let n, i;
 
     this.addSprite(20, SPRITES.BILLBOARD07, -1);
