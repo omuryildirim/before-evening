@@ -63,7 +63,8 @@ export class Orchestrator {
       reward = 100 - (90 * Math.abs(position));
     }
 
-    reward += 100 * speed;
+    reward -= 100 * (1 - speed);
+    console.log(reward);
     return reward;
   }
 

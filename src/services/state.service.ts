@@ -303,7 +303,7 @@ export class StateService {
       return seconds + "." + tenths;
   }
 
-  public reset() {
+  public randomizeState() {
     this.skySpeed = 0.001;                   // background sky layer scroll speed when going around curve (or up hill)
     this.hillSpeed = 0.002;                   // background hill layer scroll speed when going around curve (or up hill)
     this.treeSpeed = 0.003;                   // background tree layer scroll speed when going around curve (or up hill)
@@ -311,16 +311,16 @@ export class StateService {
     this.hillOffset = 0;                       // current hill scroll offset
     this.treeOffset = 0;                       // current tree scroll offset
     this.cameraHeight = 1000;                    // z height of camera
-    this.playerX = 0;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
-    this.position = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
-    this.speed = 0;                       // current speed
+    this.playerX = Math.random() - 0.5;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
+    this.position = Math.random() * this.trackLength;                       // current camera Z position (add playerZ to get player's absolute Z position)
+    this.speed = Math.random() * this.maxSpeed;                       // current speed
     this.totalCars = 0;                     // total number of cars on the road
     this.currentLapTime = 0;                       // current lap time
     this.lastLapTime = null;                    // last lap time
 
     this.keyLeft = false;
     this.keyRight = false;
-    this.keyFaster = false;
+    this.keyFaster = true;
     this.keySlower = false;
   }
 }

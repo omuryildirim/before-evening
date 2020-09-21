@@ -68,7 +68,7 @@ class PolicyNetwork {
    */
   constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number, public gameStateService: GameStateService) {
     this.memory = new Memory(maxStepsPerGame);
-    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame)
+    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 5, maxStepsPerGame)
   }
 
   /**
@@ -119,7 +119,7 @@ class PolicyNetwork {
 }
 
 // The IndexedDB path where the model of the policy network will be saved.
-const MODEL_SAVE_PATH_ = 'indexeddb://before-evening';
+const MODEL_SAVE_PATH_ = 'indexeddb://before-evening-v3';
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.

@@ -22,11 +22,11 @@ export class BeforeEvening {
     this.renderService = new Render(this.state);
     this.stateUpdate = new Subject();
 
-    Game.run(this.options);
+    Game.run(this.options());
   }
 
   public resetGame() {
-    this.state.reset();
+    this.state.randomizeState();
   }
 
   private reset(options?) {
@@ -60,7 +60,7 @@ export class BeforeEvening {
     Dom.get('currentFogDensity').innerHTML = Dom.get('fogDensity').value = this.state.fogDensity;
   }
 
-  get options() {
+  public options() {
     return {
       canvas: this.state.canvas,
       render: () => {
