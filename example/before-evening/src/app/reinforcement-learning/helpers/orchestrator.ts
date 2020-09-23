@@ -161,6 +161,7 @@ export class Orchestrator {
   }
 
   public test() {
+    this.gameStateService.refreshGame.next();
     this.gameStateService.stateUpdater.pipe(takeUntil(this.gameStateService.stopTest))
       .subscribe(rawState => {
         const state = ReinforcementLearningModel.getState(rawState);

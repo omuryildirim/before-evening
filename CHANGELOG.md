@@ -1,3 +1,12 @@
+## [0.2.0] - 2020-09-23
+
+### Added
+- Car game - Support for state progress without rendering anything to canvas
+- New Nodejs based Tensorflow model to train network faster
+
+### Changed
+- Randomized test runs
+
 ## [0.1.0] - 2020-09-21
 
 ### Added

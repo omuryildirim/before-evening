@@ -18,6 +18,7 @@ export class CarGameComponent implements AfterViewInit {
     const beforeEvening = new BeforeEvening();
 
     this.gameStateService.associateStateUpdater(beforeEvening.stateUpdate);
+    beforeEvening.runGame();
 
     beforeEvening.stateUpdate.subscribe(state => {
       this.currentState = state;
