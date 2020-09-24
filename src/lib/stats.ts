@@ -32,6 +32,7 @@ export class Stats {
   }
 
   private constructContainerElement() {
+    return null;
     const container = document.createElement('div');
     container.id = 'stats';
     container.addEventListener('mousedown', (event) => {

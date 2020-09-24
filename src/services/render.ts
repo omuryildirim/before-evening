@@ -11,14 +11,16 @@ export class Render {
   }
 
   polygon(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number, color: string) {
-    this.state.ctx.fillStyle = color;
-    this.state.ctx.beginPath();
-    this.state.ctx.moveTo(x1, y1);
-    this.state.ctx.lineTo(x2, y2);
-    this.state.ctx.lineTo(x3, y3);
-    this.state.ctx.lineTo(x4, y4);
-    this.state.ctx.closePath();
-    this.state.ctx.fill();
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x3, y3);
+    ctx.lineTo(x4, y4);
+    ctx.closePath();
+    ctx.fill();
   }
 
   //---------------------------------------------------------------------------
@@ -31,8 +33,10 @@ export class Render {
 
     let lanew1, lanew2, lanex1, lanex2, lane;
 
-    this.state.ctx.fillStyle = color.grass;
-    this.state.ctx.fillRect(0, y2, this.state.width, y1 - y2);
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color.grass;
+    ctx.fillRect(0, y2, this.state.width, y1 - y2);
 
     this.polygon(x1 - w1 - r1, y1, x1 - w1, y1, x2 - w2, y2, x2 - w2 - r2, y2, color.rumble);
     this.polygon(x1 + w1 + r1, y1, x1 + w1, y1, x2 + w2, y2, x2 + w2 + r2, y2, color.rumble);
@@ -47,7 +51,7 @@ export class Render {
         this.polygon(lanex1 - l1 / 2, y1, lanex1 + l1 / 2, y1, lanex2 + l2 / 2, y2, lanex2 - l2 / 2, y2, color.lane);
     }
 
-    this.fog(this.state.ctx, 0, y1, this.state.width, y2 - y1, fog);
+    this.fog(ctx, 0, y1, this.state.width, y2 - y1, fog);
   }
 
   //---------------------------------------------------------------------------
@@ -69,10 +73,12 @@ export class Render {
     const destW = Math.floor(this.state.width * (sourceW / imageW));
     const destH = this.state.height;
 
-    this.state.ctx.drawImage(this.state.background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH);
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(this.state.background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH);
 
     if (sourceW < imageW) {
-      this.state.ctx.drawImage(this.state.background, layer.x, sourceY, imageW - sourceW, sourceH, destW - 1, destY, this.state.width - destW, destH);
+      ctx.drawImage(this.state.background, layer.x, sourceY, imageW - sourceW, sourceH, destW - 1, destY, this.state.width - destW, destH);
     }
   }
 
@@ -89,7 +95,9 @@ export class Render {
     const clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
 
     if (clipH < destH) {
-      this.state.ctx.drawImage(this.state.sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h * clipH / destH), destX, destY, destW, destH - clipH);
+      const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(this.state.sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h * clipH / destH), destX, destY, destW, destH - clipH);
     }
 
   }
@@ -137,7 +145,9 @@ export class Render {
     let x = 0;
     let dx = -(baseSegment.curve * basePercent);
 
-    this.state.ctx.clearRect(0, 0, this.state.width, this.state.height);
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
 
     this.background(BACKGROUND.SKY, this.state.skyOffset, this.state.resolution * this.state.skySpeed * playerY);
     this.background(BACKGROUND.HILLS, this.state.hillOffset, this.state.resolution * this.state.hillSpeed * playerY);
