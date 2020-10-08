@@ -78,7 +78,7 @@ export class StateService {
     this.treeOffset = 0;                       // current tree scroll offset
     this.segments = [];                      // array of road segments
     this.cars = [];                      // array of cars on the road
-    this.stats = Game.stats('fps');       // mr.doobs FPS counter
+    this.stats = Game.stats();       // mr.doobs FPS counter
     this.background = null;                    // our background image (loaded below)
     this.sprites = null;                    // our spritesheet (loaded below)
     this.resolution = null;                    // scaling factor to provide resolution independence (computed)

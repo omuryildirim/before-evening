@@ -7,6 +7,7 @@ import {Utils} from "./lib/utils";
 import {Render} from "./services/render";
 import {RoadHelper} from "./services/road.helper";
 import {StateService} from "./services/state.service";
+import { Stats } from './lib/stats';
 
 export * from './helpers/sprites';
 
@@ -15,9 +16,11 @@ export class BeforeEvening {
   private roadHelper: RoadHelper;
   private renderService: Render;
   public stateUpdate: Subject<StateUpdate>;
+  public stats: Stats;
 
   constructor() {
     this.state = new StateService();
+    this.stats = this.state.stats;
     this.roadHelper = new RoadHelper(this.state);
     this.renderService = new Render(this.state);
     this.stateUpdate = new Subject();

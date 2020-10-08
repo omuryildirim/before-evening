@@ -2,7 +2,6 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {SaveablePolicyNetwork} from "./helpers/policy-network";
 import {GameStateService} from "../game-state.service";
 import * as tf from "@tensorflow/tfjs";
-import {ReinforcementLearningModel} from "./helpers/reinforcement-learning.model";
 
 @Component({
   selector: 'reinforcement-learning',
