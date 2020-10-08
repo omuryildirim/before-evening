@@ -1,14 +1,14 @@
+import {Subject} from "rxjs";
+
 import {SPRITES} from "../constants/sprites.constants";
-import {Dom} from "../helpers/dom";
 import {Game} from "../helpers/game";
 import {Car} from "../interfaces/car.interface";
 import {Segment} from "../interfaces/segment.interface";
+import {StateUpdate} from "../interfaces/state.interfaces";
 import {Stats} from "../lib/stats";
 import {Utils} from "../lib/utils";
 
 import {Render} from "./render";
-import {Subject} from "rxjs";
-import {StateUpdate} from "../interfaces/state.interfaces";
 
 export class StateService {
   public fps: number;                      // how many 'update' frames per second
@@ -25,8 +25,6 @@ export class StateService {
   public segments: Segment[];                      // array of road segments
   public cars: Car[];                      // array of cars on the road
   public stats: Stats;       // mr.doobs FPS counter
-  public canvas: HTMLCanvasElement;       // our canvas...
-  public ctx: CanvasRenderingContext2D; // ...and its drawing context
   public background: CanvasImageSource;                    // our background image (loaded below)
   public sprites: CanvasImageSource;                    // our spritesheet (loaded below)
   public resolution: number;                    // scaling factor to provide resolution independence (computed)
@@ -80,9 +78,7 @@ export class StateService {
     this.treeOffset = 0;                       // current tree scroll offset
     this.segments = [];                      // array of road segments
     this.cars = [];                      // array of cars on the road
-    this.stats = Game.stats('fps');       // mr.doobs FPS counter
-    this.canvas = Dom.get('canvas');       // our canvas...
-    this.ctx = this.canvas.getContext('2d'); // ...and its drawing context
+    this.stats = Game.stats();       // mr.doobs FPS counter
     this.background = null;                    // our background image (loaded below)
     this.sprites = null;                    // our spritesheet (loaded below)
     this.resolution = null;                    // scaling factor to provide resolution independence (computed)
@@ -114,16 +110,9 @@ export class StateService {
     this.keyRight = false;
     this.keyFaster = false;
     this.keySlower = false;
-
-    this.hud = {
-      speed: {value: null, dom: Dom.get('speed_value')},
-      current_lap_time: {value: null, dom: Dom.get('current_lap_time_value')},
-      last_lap_time: {value: null, dom: Dom.get('last_lap_time_value')},
-      fast_lap_time: {value: null, dom: Dom.get('fast_lap_time_value')}
-    };
   }
 
-  public update(dt: number, stateUpdater: Subject<StateUpdate>) {
+  public update(dt: number, stateUpdater: Subject<StateUpdate>): void | StateUpdate {
     let n, car, carW, sprite, spriteW;
     const playerSegment = Render.findSegment(this.segments, this.segmentLength, this.position + this.playerZ);
     const playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
@@ -150,7 +139,6 @@ export class StateService {
     } else {
       this.speed = Utils.accelerate(this.speed, this.decel, dt);
     }
-
 
     if ((this.playerX < -1) || (this.playerX > 1)) {
 
@@ -192,24 +180,10 @@ export class StateService {
       if (this.currentLapTime && (startPosition < this.playerZ)) {
         this.lastLapTime = this.currentLapTime;
         this.currentLapTime = 0;
-        if (this.lastLapTime <= Utils.toFloat(Dom.storage.fast_lap_time)) {
-          Dom.storage.fast_lap_time = this.lastLapTime;
-          this.updateHud('fast_lap_time', this.formatTime(this.lastLapTime));
-          Dom.addClassName('fast_lap_time', 'fastest');
-          Dom.addClassName('last_lap_time', 'fastest');
-        } else {
-          Dom.removeClassName('fast_lap_time', 'fastest');
-          Dom.removeClassName('last_lap_time', 'fastest');
-        }
-        this.updateHud('last_lap_time', this.formatTime(this.lastLapTime));
-        Dom.show('last_lap_time');
       } else {
         this.currentLapTime += dt;
       }
     }
-
-    this.updateHud('speed', 5 * Math.round(this.speed / 500));
-    this.updateHud('current_lap_time', this.formatTime(this.currentLapTime));
 
     const next5Curve = [];
     for (let index = 1; index < 6; index++) {
@@ -217,7 +191,11 @@ export class StateService {
       next5Curve.push(curve);
     }
 
-    stateUpdater.next({playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve});
+    if (stateUpdater) {
+      stateUpdater.next({playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve});
+    } else {
+      return {playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve};
+    }
   }
 
   //-------------------------------------------------------------------------
@@ -282,15 +260,6 @@ export class StateService {
       return -0.1;
     else
       return 0;
-  }
-
-  //-------------------------------------------------------------------------
-
-  public updateHud(key, value) { // accessing DOM can be slow, so only do it if value has changed
-    if (this.hud[key].value !== value) {
-      this.hud[key].value = value;
-      Dom.set(this.hud[key].dom, value);
-    }
   }
 
   public formatTime(dt) {
