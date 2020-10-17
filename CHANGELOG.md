@@ -1,3 +1,10 @@
+## [0.2.1] - 2020-10-17
+
+### Changed
+- Fixed training methodology for Nodejs model
+- New trained model with 12 million sample space
+- Updated test example to test Nodejs model
+
 ## [0.2.0] - 2020-09-23
 
 ### Added

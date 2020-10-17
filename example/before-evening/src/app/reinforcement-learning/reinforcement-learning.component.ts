@@ -95,7 +95,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       this.disabledStatus.deleteStoredModelButton = true;
 
     } else {
-      this.storedModelStatus = `Saved@${modelInfo.dateSaved.toISOString()}`;
+      this.storedModelStatus = `Saved@`;
       this.disabledStatus.deleteStoredModelButton = false;
       this.disabledStatus.createModelButton = true;
     }

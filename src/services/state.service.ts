@@ -116,7 +116,7 @@ export class StateService {
     let n, car, carW, sprite, spriteW;
     const playerSegment = Render.findSegment(this.segments, this.segmentLength, this.position + this.playerZ);
     const playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
-    const speedPercent = this.speed / this.maxSpeed;
+    let speedPercent = this.speed / this.maxSpeed;
     const dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
     const startPosition = this.position;
 
@@ -191,6 +191,7 @@ export class StateService {
       next5Curve.push(curve);
     }
 
+    speedPercent = this.speed / this.maxSpeed;
     if (stateUpdater) {
       stateUpdater.next({playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve});
     } else {

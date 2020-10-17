@@ -128,4 +128,54 @@ export class BeforeEvening {
         break;
     }
   }
+
+  public testAction(actionKeys: number[]) {
+    const mockState = {
+      keyLeft: false,
+      keyRight: false,
+      keyFaster: false,
+      keySlower: false,
+      playerX: undefined,
+      speed: undefined
+    }
+
+    actionKeys.forEach(action => {
+      switch (action) {
+        case KEY.LEFT:
+          mockState.keyLeft = true;
+          break;
+        case KEY.RIGHT:
+          mockState.keyRight = true;
+          break;
+        case KEY.UP:
+          mockState.keyFaster = true;
+          break;
+        case KEY.DOWN:
+          mockState.keySlower = true;
+          break;
+      }
+    })
+
+    const playerSegment = Render.findSegment(this.state.segments, this.state.segmentLength, this.state.position + this.state.playerZ);
+    const speedPercent = this.state.speed / this.state.maxSpeed;
+    const dx = this.state.step * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+
+    if (mockState.keyLeft) {
+      mockState.playerX = this.state.playerX - dx;
+    } else if (mockState.keyRight) {
+      mockState.playerX = this.state.playerX + dx;
+    }
+
+    mockState.playerX = mockState.playerX - (dx * speedPercent * playerSegment.curve * this.state.centrifugal);
+
+    if (mockState.keyFaster) {
+      mockState.speed = Utils.accelerate(this.state.speed, this.state.accel, this.state.step) / this.state.maxSpeed;
+    } else if (mockState.keySlower) {
+      mockState.speed = Utils.accelerate(this.state.speed, this.state.breaking, this.state.step) / this.state.maxSpeed;
+    } else {
+      mockState.speed = Utils.accelerate(this.state.speed, this.state.decel, this.state.step) / this.state.maxSpeed;
+    }
+
+    return mockState;
+  }
 }
