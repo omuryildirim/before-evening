@@ -8,3 +8,5 @@ src/**.js
 coverage
 *.log
 yarn.lock
+.DS_Store
+example/.DS_Store

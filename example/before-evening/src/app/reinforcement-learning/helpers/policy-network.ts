@@ -119,7 +119,7 @@ class PolicyNetwork {
 }
 
 // The IndexedDB path where the model of the policy network will be saved.
-const MODEL_SAVE_PATH_ = 'indexeddb://before-evening-v3';
+const MODEL_SAVE_PATH_ = '../../../assets/before-evening-v3';
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
@@ -151,10 +151,10 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @throws {Error} If no model can be found in IndexedDB.
    */
   static async loadModel(gameStateService: GameStateService, maxStepsPerGame: number) {
-    const modelsInfo = await tf.io.listModels();
-    if (MODEL_SAVE_PATH_ in modelsInfo) {
+    const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
+    if (model) {
       console.log(`Loading existing model...`);
-      const model = await tf.loadLayersModel(MODEL_SAVE_PATH_);
+      const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
       console.log(`Loaded model from ${MODEL_SAVE_PATH_}`);
       return new SaveablePolicyNetwork(model, maxStepsPerGame, gameStateService);
     } else {
@@ -169,8 +169,8 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   object. Else, `undefined`.
    */
   static async checkStoredModelStatus() {
-    const modelsInfo = await tf.io.listModels();
-    return modelsInfo[MODEL_SAVE_PATH_];
+    const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
+    return model;
   }
 
   /**

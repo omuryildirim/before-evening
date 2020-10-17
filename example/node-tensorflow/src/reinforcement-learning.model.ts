@@ -3,7 +3,7 @@ import * as tf from '@tensorflow/tfjs';
 export interface StateUpdate {
   playerX: number;
   speed: number;
-  next5Curve: number[];
+  next5Curve: [number, number, number, number, number];
 }
 
 export class ReinforcementLearningModel {
