@@ -36,9 +36,9 @@
 
 import * as tf from '@tensorflow/tfjs-node';
 
-import {ReinforcementLearningModel} from './reinforcement-learning.model';
-
-import {GameStateService} from "./index";
+import { ReinforcementLearningModel } from './reinforcement-learning.model';
+import * as fs from 'fs';
+import path from 'path';
 
 /**
  * Policy network for controlling the cart-pole system.
@@ -62,15 +62,15 @@ class PolicyNetwork {
    *   - An Array of numbers (for any number of hidden layers).
    *   - An instance of tf.LayersModel.
    * @param maxStepsPerGame
-   * @param gameStateService
    */
-  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number, public gameStateService: GameStateService) {
+  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
     this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 5, maxStepsPerGame)
   }
 }
 
 // The IndexedDB path where the model of the policy network will be saved.
-const MODEL_SAVE_PATH_ = 'file://./before-evening-v3';
+const MODEL_VERSION = 'before-evening-v3';
+const MODEL_SAVE_PATH_ = 'file://./' + MODEL_VERSION;
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
@@ -81,10 +81,9 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *
    * @param {number | number[]} hiddenLayerSizesOrModel
    * @param maxStepsPerGame
-   * @param gameStateService
    */
-  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number, public gameStateService: GameStateService) {
-    super(hiddenLayerSizesOrModel, maxStepsPerGame, gameStateService);
+  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
+    super(hiddenLayerSizesOrModel, maxStepsPerGame);
   }
 
   /**
@@ -101,13 +100,13 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   `SaveablePolicyNetwork`.
    * @throws {Error} If no model can be found in IndexedDB.
    */
-  static async loadModel(gameStateService: GameStateService, maxStepsPerGame: number) {
+  static async loadModel(maxStepsPerGame: number) {
     const handler = tf.io.fileSystem('./before-evening-v3');
     if (handler) {
       console.log(`Loading existing model...`);
       const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
       console.log(`Loaded model from ${MODEL_SAVE_PATH_}`);
-      return new SaveablePolicyNetwork(model, maxStepsPerGame, gameStateService);
+      return new SaveablePolicyNetwork(model, maxStepsPerGame);
     } else {
       throw new Error(`Cannot find model at ${MODEL_SAVE_PATH_}.`);
     }
@@ -120,7 +119,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   object. Else, `undefined`.
    */
   static async checkStoredModelStatus() {
-    return tf.io.fileSystem(MODEL_SAVE_PATH_);
+    return fs.existsSync(path.resolve('./' + MODEL_VERSION + '/model.json'));
   }
 
   /**

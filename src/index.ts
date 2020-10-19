@@ -164,6 +164,8 @@ export class BeforeEvening {
       mockState.playerX = this.state.playerX - dx;
     } else if (mockState.keyRight) {
       mockState.playerX = this.state.playerX + dx;
+    } else {
+      mockState.playerX = this.state.playerX;
     }
 
     mockState.playerX = mockState.playerX - (dx * speedPercent * playerSegment.curve * this.state.centrifugal);

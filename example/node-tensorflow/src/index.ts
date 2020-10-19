@@ -1,5 +1,4 @@
 import * as tf from '@tensorflow/tfjs';
-import { Subject } from 'rxjs';
 
 import { BeforeEvening } from '../../../build/main';
 
@@ -10,9 +9,8 @@ import {
   StateUpdate
 } from './reinforcement-learning.model';
 import {
-  ActionKeyEventMapper, ActionKeyToEventName,
-  ActionNameList,
-  KeyboardEventKey
+  ActionKeyEventMapper,
+  ActionKeyToEventName
 } from './action-key-event-mapper';
 
 import * as fs from 'fs';
@@ -20,65 +18,6 @@ import * as fs from 'fs';
 const MIN_EPSILON = 0.01;
 const MAX_EPSILON = 0.2;
 const LAMBDA = 0.01;
-
-export class GameStateService {
-  public stateUpdater: Subject<StateUpdate>;
-  public refreshGame: Subject<null>;
-  private previousActions: number[];
-  public stopTest: Subject<boolean>;
-
-  constructor() {
-    this.refreshGame = new Subject<null>();
-    this.stopTest = new Subject<null>();
-  }
-
-  public associateStateUpdater(stateUpdater: any) {
-    this.stateUpdater = stateUpdater;
-  }
-
-  public dispatchAnAction(action: ActionNameList) {
-    const keyList: number[] = [];
-
-    switch (action) {
-      case 'left':
-        keyList.push(KeyboardEventKey.LEFT);
-        break;
-      case 'up':
-        keyList.push(KeyboardEventKey.UP);
-        break;
-      case 'right':
-        keyList.push(KeyboardEventKey.RIGHT);
-        break;
-      case 'down':
-        keyList.push(KeyboardEventKey.DOWN);
-        break;
-      case 'left-up':
-        keyList.push(KeyboardEventKey.LEFT, KeyboardEventKey.UP);
-        break;
-      case 'right-up':
-        keyList.push(KeyboardEventKey.RIGHT, KeyboardEventKey.UP);
-        break;
-      case 'right-down':
-        keyList.push(KeyboardEventKey.RIGHT, KeyboardEventKey.DOWN);
-        break;
-      case 'left-down':
-        keyList.push(KeyboardEventKey.LEFT, KeyboardEventKey.DOWN);
-        break;
-    }
-
-    if (this.previousActions) {
-      for (const key of this.previousActions) {
-        document.dispatchEvent(new KeyboardEvent('keyup', { 'keyCode': key } as any));
-      }
-    }
-
-    for (const key of keyList) {
-      document.dispatchEvent(new KeyboardEvent('keydown', { 'keyCode': key } as any));
-    }
-
-    this.previousActions = keyList;
-  }
-}
 
 class NodeTensorflow {
   private policyNet: SaveablePolicyNetwork;
@@ -94,7 +33,6 @@ class NodeTensorflow {
   public maxAwardList: number[];
   public gameStatus: string;
   public gameProgress: number;
-  public gameStateService: GameStateService;
   private beforeEvening: BeforeEvening;
   private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; } }[];
 
@@ -110,16 +48,15 @@ class NodeTensorflow {
     this.iterationProgress = 0;
     this.gameStatus = '';
     this.gameProgress = 0;
-    this.gameStateService = new GameStateService();
     this.dataset = [];
 
     this.initialize();
   }
 
   private async initialize() {
-    if (await SaveablePolicyNetwork.checkStoredModelStatus() != null) {
+    if (await SaveablePolicyNetwork.checkStoredModelStatus()) {
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(this.gameStateService, maxStepsPerGame);
+      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     } else {
       this.createModel();
@@ -143,7 +80,7 @@ class NodeTensorflow {
     });
 
     const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    this.policyNet = new SaveablePolicyNetwork(hiddenLayerSizes, maxStepsPerGame, this.gameStateService);
+    this.policyNet = new SaveablePolicyNetwork(hiddenLayerSizes, maxStepsPerGame);
   }
 
   public async deleteStoredModel() {
@@ -174,7 +111,7 @@ class NodeTensorflow {
 
     this.maxAwardList = [];
     this.onIterationEnd(0, trainIterations);
-    for (let i = 0; i < trainIterations; ++i) {
+    for (let iteration = 0; iteration < trainIterations; ++iteration) {
       const maxAward = await this.trainModelForNumberOfGames(
         discountRate,
         gamesPerIteration,
@@ -184,7 +121,7 @@ class NodeTensorflow {
 
       console.log(`Maximum award was ${maxAward}`);
 
-      this.onIterationEnd(i + 1, trainIterations);
+      this.onIterationEnd(iteration + 1, trainIterations);
       await this.policyNet.saveModel();
     }
   }
@@ -205,14 +142,6 @@ class NodeTensorflow {
 
     this.writeLogToFile();
     return Math.max(...maxAward);
-  }
-
-  private writeLogToFile() {
-    const logStream = fs.createWriteStream('dataset.txt', {flags: 'a'});
-    this.dataset.forEach((action) => { logStream.write(JSON.stringify(action) + '\n'); });
-    logStream.end();
-
-    this.dataset = [];
   }
 
   private async runOneEpisode(discountRate: number, maxStepsPerGame: number, memory: Memory): Promise<number> {
@@ -259,27 +188,6 @@ class NodeTensorflow {
     };
 
     return new Promise(isFinished);
-  }
-
-  private createNewDatasetPoint(state: StateUpdate) {
-    let bestReward = -100000000000;
-    let bestAction: number;
-
-    // @ts-ignore
-    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
-      const rawState = this.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
-      const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
-
-      if (reward > bestReward) {
-        bestReward = reward;
-        bestAction = action;
-      }
-
-      // console.log("-----------------------------");
-      // console.log(state, rawState, reward, action);
-    }
-
-    this.dataset.push({state: [state.playerX, ...state.next5Curve, state.speed], action: {key: bestAction, value: ActionKeyToEventName[bestAction]}});
   }
 
   private takeAction(state: tf.Tensor2D, remainingSteps: number, previousAction: number, epsilon = MAX_EPSILON) {
@@ -369,11 +277,40 @@ class NodeTensorflow {
     this.gameStatus = `Game ${gameCount} of ${totalGames}`;
     this.gameProgress = gameCount / totalGames * 100;
 
-    console.log('*********', '\n', this.gameStatus, '\n');
+    console.log('*********', '\n', this.iterationStatus, '\n', this.gameStatus, '\n');
 
     if (gameCount === totalGames) {
       this.gameStatus = 'Updating weights...';
     }
+  }
+
+  private createNewDatasetPoint(state: StateUpdate) {
+    let bestReward = -100000000000;
+    let bestAction: number;
+
+    // @ts-ignore
+    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
+      const rawState = this.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
+      const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
+
+      if (reward > bestReward) {
+        bestReward = reward;
+        bestAction = action;
+      }
+
+      // console.log("-----------------------------");
+      // console.log(state, rawState, reward, action);
+    }
+
+    this.dataset.push({state: [state.playerX, ...state.next5Curve, state.speed], action: {key: bestAction, value: ActionKeyToEventName[bestAction]}});
+  }
+
+  private writeLogToFile() {
+    const logStream = fs.createWriteStream('dataset.txt', {flags: 'a'});
+    this.dataset.forEach((action) => { logStream.write(JSON.stringify(action) + '\n'); });
+    logStream.end();
+
+    this.dataset = [];
   }
 }
 

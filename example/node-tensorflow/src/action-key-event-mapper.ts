@@ -20,8 +20,8 @@ export enum KeyboardEventKey {
 }
 
 export const ActionKeyToEventName = {
-  '-1': 'left',
-  '0': 'up',
+  '-1': 'up',
+  '0': 'left',
   '1': 'right',
   '2': 'down',
   '3': 'left-up',
@@ -31,8 +31,8 @@ export const ActionKeyToEventName = {
 };
 
 const ActionKeyToKeyboardEventKey = {
-  '-1': [KeyboardEventKey.LEFT],
-  '0': [KeyboardEventKey.UP],
+  '-1': [KeyboardEventKey.UP],
+  '0': [KeyboardEventKey.LEFT],
   '1': [KeyboardEventKey.RIGHT],
   '2': [KeyboardEventKey.DOWN],
   '3': [KeyboardEventKey.LEFT, KeyboardEventKey.UP],
