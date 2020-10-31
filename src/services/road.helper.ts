@@ -116,9 +116,33 @@ export class RoadHelper {
     this.addRoad(num, num, num, -ROAD.CURVE.EASY, -this.lastY() / this.state.segmentLength);
   }
 
-  public resetRoad() {
+  public resetRoad(type?: 'straight') {
     this.state.segments.splice(0, this.state.segments.length);
 
+    switch (type) {
+      case 'straight':
+        this.addStraight(ROAD.LENGTH.LONG);
+        this.addBumps();
+        this.addStraight(ROAD.LENGTH.LONG);
+        this.addRoad(200, 200, 200, 0, -this.lastY() / this.state.segmentLength);
+        break;
+      default:
+        this.addDefaultRoad();
+        break;
+    }
+
+    this.resetSprites();
+    this.resetCars();
+
+    this.state.segments[Render.findSegment(this.state.segments, this.state.segmentLength, this.state.playerZ).index + 2].color = COLORS.START;
+    this.state.segments[Render.findSegment(this.state.segments, this.state.segmentLength, this.state.playerZ).index + 3].color = COLORS.START;
+    for (let n = 0; n < this.state.rumbleLength; n++)
+      this.state.segments[this.state.segments.length - 1 - n].color = COLORS.FINISH;
+
+    this.state.trackLength = this.state.segments.length * this.state.segmentLength;
+  }
+
+  private addDefaultRoad() {
     this.addStraight(ROAD.LENGTH.SHORT);
     this.addLowRollingHills(null, null);
     this.addSCurves();
@@ -137,16 +161,6 @@ export class RoadHelper {
     this.addStraight(null);
     this.addSCurves();
     this.addDownhillToEnd(null);
-
-    this.resetSprites();
-    this.resetCars();
-
-    this.state.segments[Render.findSegment(this.state.segments, this.state.segmentLength, this.state.playerZ).index + 2].color = COLORS.START;
-    this.state.segments[Render.findSegment(this.state.segments, this.state.segmentLength, this.state.playerZ).index + 3].color = COLORS.START;
-    for (let n = 0; n < this.state.rumbleLength; n++)
-      this.state.segments[this.state.segments.length - 1 - n].color = COLORS.FINISH;
-
-    this.state.trackLength = this.state.segments.length * this.state.segmentLength;
   }
 
   private resetSprites() {

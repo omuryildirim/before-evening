@@ -18,13 +18,13 @@ export class BeforeEvening {
   public stateUpdate: Subject<StateUpdate>;
   public stats: Stats;
 
-  constructor() {
+  constructor(type?: 'straight') {
     this.state = new StateService();
     this.stats = this.state.stats;
     this.roadHelper = new RoadHelper(this.state);
     this.renderService = new Render(this.state);
     this.stateUpdate = new Subject();
-    this.roadHelper.resetRoad(); // only rebuild road when necessary
+    this.roadHelper.resetRoad(type); // only rebuild road when necessary
   }
 
   public resetGame() {

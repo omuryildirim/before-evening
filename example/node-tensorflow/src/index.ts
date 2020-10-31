@@ -62,7 +62,7 @@ class NodeTensorflow {
       this.createModel();
     }
 
-    this.beforeEvening = new BeforeEvening();
+    this.beforeEvening = new BeforeEvening('straight');
 
     await this.train();
   };
