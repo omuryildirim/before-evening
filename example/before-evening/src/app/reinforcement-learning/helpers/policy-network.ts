@@ -119,7 +119,7 @@ class PolicyNetwork {
 }
 
 // The IndexedDB path where the model of the policy network will be saved.
-const MODEL_SAVE_PATH_ = '../../../assets/before-evening-v3';
+const MODEL_SAVE_PATH = 'localstorage://before-evening-v3';
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
@@ -140,7 +140,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * Save the model to IndexedDB.
    */
   async saveModel() {
-    return await this.model.network.save(MODEL_SAVE_PATH_);
+    return await this.model.network.save(MODEL_SAVE_PATH);
   }
 
   /**
@@ -151,14 +151,14 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @throws {Error} If no model can be found in IndexedDB.
    */
   static async loadModel(gameStateService: GameStateService, maxStepsPerGame: number) {
-    const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
+    const model = await tf.loadLayersModel(MODEL_SAVE_PATH);
     if (model) {
       console.log(`Loading existing model...`);
-      const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
-      console.log(`Loaded model from ${MODEL_SAVE_PATH_}`);
+      const model = await tf.loadLayersModel(MODEL_SAVE_PATH);
+      console.log(`Loaded model from ${MODEL_SAVE_PATH}`);
       return new SaveablePolicyNetwork(model, maxStepsPerGame, gameStateService);
     } else {
-      throw new Error(`Cannot find model at ${MODEL_SAVE_PATH_}.`);
+      throw new Error(`Cannot find model at ${MODEL_SAVE_PATH}.`);
     }
   }
 
@@ -169,15 +169,14 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   object. Else, `undefined`.
    */
   static async checkStoredModelStatus() {
-    const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
-    return model;
+    return await tf.loadLayersModel(MODEL_SAVE_PATH);
   }
 
   /**
    * Remove the locally saved model from IndexedDB.
    */
   async removeModel() {
-    return await tf.io.removeModel(MODEL_SAVE_PATH_);
+    return await tf.io.removeModel(MODEL_SAVE_PATH);
   }
 
   /**
