@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import {StateUpdate} from "../../../../../../build/main/interfaces/state.interfaces";
+import {StateUpdate} from "before-evening/build/main/interfaces/state.interfaces";
 
 export class ReinforcementLearningModel {
   public numStates: number;

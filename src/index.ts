@@ -3,18 +3,18 @@ import {Subject} from "rxjs";
 import {KEY} from "./constants/keys.constant";
 import {Game} from "./helpers/game";
 import {StateUpdate} from "./interfaces/state.interfaces";
+import {Stats} from './lib/stats';
 import {Utils} from "./lib/utils";
 import {Render} from "./services/render";
 import {RoadHelper} from "./services/road.helper";
 import {StateService} from "./services/state.service";
-import { Stats } from './lib/stats';
 
 export * from './helpers/sprites';
 
 export class BeforeEvening {
   private state: StateService;
   private roadHelper: RoadHelper;
-  private renderService: Render;
+  private readonly renderService: Render;
   public stateUpdate: Subject<StateUpdate>;
   public stats: Stats;
 
@@ -71,7 +71,9 @@ export class BeforeEvening {
       this.state.update(this.state.step, this.stateUpdate);
     }
 
-    this.renderService.render();
+    if (!this.state.skipRender) {
+      this.renderService.render();
+    }
 
     this.state.stats.update();
 
@@ -90,7 +92,11 @@ export class BeforeEvening {
       next5Curve.push(curve);
     }
 
-    return {playerX: this.state.playerX, speed: this.state.speed/this.state.maxSpeed, next5Curve: next5Curve};
+    return {
+      playerX: this.state.playerX,
+      speed: this.state.speed / this.state.maxSpeed,
+      next5Curve: next5Curve
+    };
   }
 
   private ready(images) {
@@ -179,5 +185,9 @@ export class BeforeEvening {
     }
 
     return mockState;
+  }
+
+  public toggleSkipRender(skipRender: boolean) {
+    this.state.skipRender = skipRender;
   }
 }

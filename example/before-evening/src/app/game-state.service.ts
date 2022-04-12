@@ -1,7 +1,7 @@
 import {Injectable, OnInit} from "@angular/core";
 import {Subject} from "rxjs";
-import {KEY} from "../../../../src/constants/keys.constant";
-import {StateUpdate} from "../../../../build/main/interfaces/state.interfaces";
+import {KEY} from "before-evening/build/main/constants/keys.constant";
+import {StateUpdate} from "before-evening/build/main/interfaces/state.interfaces";
 import {ActionList} from "./reinforcement-learning/reinforcement-learning.types";
 
 @Injectable()

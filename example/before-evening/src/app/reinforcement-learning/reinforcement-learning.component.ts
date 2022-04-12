@@ -81,6 +81,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
 
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
       this.policyNet = new SaveablePolicyNetwork(hiddenLayerSizes, maxStepsPerGame, this.gameStateService);
+      await this.policyNet.saveModel();
 
       await this.updateUIControlState();
     } catch (err) {

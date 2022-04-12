@@ -1,3 +1,10 @@
+## [0.2.2] - 2020-10-17
+
+### Changed
+- Fixed browser training
+- Moved model management to browser localstorage
+- Introduced stop render option to improve training performance
+
 ## [0.2.1] - 2020-10-17
 
 ### Changed
