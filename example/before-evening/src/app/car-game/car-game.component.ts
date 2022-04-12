@@ -1,8 +1,8 @@
-import { AfterViewInit, Component } from '@angular/core';
-import { BeforeEvening } from 'before-evening';
-import { GameStateService } from '../game-state.service';
-import { StateUpdate } from 'before-evening/build/main/interfaces/state.interfaces';
-import { StatsRenderer } from './statsRenderer';
+import {AfterViewInit, Component} from '@angular/core';
+import {BeforeEvening} from 'before-evening';
+import {GameStateService} from '../game-state.service';
+import {StateUpdate} from 'before-evening/build/main/interfaces/state.interfaces';
+import {StatsRenderer} from './statsRenderer';
 
 @Component({
   selector: 'car-game',

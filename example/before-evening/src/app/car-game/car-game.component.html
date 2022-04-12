@@ -69,7 +69,7 @@
 </audio>
 <span id="mute"></span>
 
-<div *ngIf="currentState"
+<div *ngIf="currentState && !skipRender"
      class="current-state">
   <div>
     {{ currentState.playerX }}
@@ -80,10 +80,10 @@
   <div>
     {{ currentState.speed }}
   </div>
+</div>
 
-  <div class="input-div">
-    <label class="input-label">Render during training:</label>
-    <input type="checkbox" [(ngModel)]="skipRender" (ngModelChange)="toggleSkipRender()"/>
-    <span class="note">Uncheck me to speed up training.</span>
-  </div>
+<div class="input-div">
+  <label class="input-label">Stop render:</label>
+  <input type="checkbox" [(ngModel)]="skipRender" (ngModelChange)="toggleSkipRender()"/>
+  <div class="note">Check me to speed up training.</div>
 </div>
