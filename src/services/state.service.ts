@@ -11,6 +11,8 @@ import {Utils} from "../lib/utils";
 import {Render} from "./render";
 
 export class StateService {
+  private _skipRender = false;
+
   public fps: number;                      // how many 'update' frames per second
   public step: number;                   // how long is each frame (in seconds)
   public width: number;                    // logical canvas width
@@ -193,9 +195,17 @@ export class StateService {
 
     speedPercent = this.speed / this.maxSpeed;
     if (stateUpdater) {
-      stateUpdater.next({playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve});
+      stateUpdater.next({
+        playerX: this.playerX,
+        speed: speedPercent,
+        next5Curve: next5Curve
+      });
     } else {
-      return {playerX: this.playerX, speed: speedPercent, next5Curve: next5Curve};
+      return {
+        playerX: this.playerX,
+        speed: speedPercent,
+        next5Curve: next5Curve
+      };
     }
   }
 
@@ -292,5 +302,16 @@ export class StateService {
     this.keyRight = false;
     this.keyFaster = true;
     this.keySlower = false;
+  }
+
+  get skipRender() {
+    return this._skipRender;
+  }
+
+  set skipRender(skipRender) {
+    this._skipRender = skipRender;
+
+    // If render is skipped decrease step to 1ms to fasten the simulation.
+    this.step = skipRender ? 0.001 : 1 / this.fps;
   }
 }

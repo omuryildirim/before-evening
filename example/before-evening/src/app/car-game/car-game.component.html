@@ -80,4 +80,10 @@
   <div>
     {{ currentState.speed }}
   </div>
+
+  <div class="input-div">
+    <label class="input-label">Render during training:</label>
+    <input type="checkbox" [(ngModel)]="skipRender" (ngModelChange)="toggleSkipRender()"/>
+    <span class="note">Uncheck me to speed up training.</span>
+  </div>
 </div>
