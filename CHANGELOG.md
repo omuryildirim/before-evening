@@ -24,7 +24,7 @@
 ## [0.1.0] - 2020-09-21
 
 ### Added
-- Episodes will start with a random speed at random location rather then start point of the track with 0 speed
+- Episodes will start with a random speed at random location rather than start point of the track with 0 speed
 
 ### Changed
 - New reward function:
