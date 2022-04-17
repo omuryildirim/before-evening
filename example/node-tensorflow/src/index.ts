@@ -35,9 +35,9 @@ class NodeTensorflow {
   constructor() {
     this.hiddenLayerSize = '1024';
     this.storedModelStatus = 'N/A';
-    this.numberOfIterations = '20';
+    this.numberOfIterations = '50';
     this.gamesPerIteration = '100';
-    this.maxStepsPerGame = '3000';
+    this.maxStepsPerGame = '1000';
     this.discountRate = '0.95';
     this.iterationStatus = '';
     this.iterationProgress = 0;
@@ -58,7 +58,7 @@ class NodeTensorflow {
       this.createModel();
     }
 
-    this.beforeEvening = new BeforeEvening('straight');
+    this.beforeEvening = new BeforeEvening();
 
     await this.train();
   };
@@ -151,6 +151,7 @@ class NodeTensorflow {
     let currentStep = 0;
 
     const isFinished = async (resolve) => {
+      let previousReward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
       while (remainingSteps) {
         // Exponentially decay the exploration parameter
         const epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * currentStep);
@@ -168,15 +169,18 @@ class NodeTensorflow {
         const nextState = ReinforcementLearningModel.getState(rawState);
         const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
 
+        const relativeReward = NodeTensorflow.computeRelativeReward({reward, previousReward, x: rawState.playerX, speed: rawState.speed})
+
         // Keep the car on max position if reached
-        memory.addSample([state, action, reward, nextState]);
+        memory.addSample([state, action, relativeReward, nextState]);
 
         currentStep += 1;
 
         state = nextState;
-        totalReward += reward;
+        totalReward += relativeReward;
 
         previousAction = action;
+        previousReward = reward;
       }
 
       await this.educateTheNet(memory, discountRate);
@@ -219,6 +223,26 @@ class NodeTensorflow {
     reward -= 50 * (1 - speed);
 
     return reward;
+  }
+
+  private static computeRelativeReward({reward, previousReward, x, speed}: {reward: number; previousReward: number; x: number; speed: number;}) {
+    // relative reward is the evaluation of current state compared to previous state
+    // in this way we hope to evaluate the action based on the change happened
+    // rather than the current state's positivity.
+    //
+    // for example if car is in the middle of the road at max speed, if model picks
+    // a left move, car will slow down and move from center. But because of the new state
+    // is very near to the perfect position reward of state will close to max reward.
+    // But in practice the action have a negative impact on car's movement.
+    let relativeReward = reward - previousReward;
+
+    // if relative reward is zero and car is not at the center of road or speed is not at max
+    // then return min possible reward
+    if (relativeReward === 0 && (x !== 0 || speed !== 1)) {
+      return -100;
+    }
+
+    return relativeReward;
   }
 
   private async educateTheNet(memory: Memory, discountRate: number) {
