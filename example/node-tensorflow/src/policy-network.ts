@@ -64,7 +64,7 @@ class PolicyNetwork {
    * @param maxStepsPerGame
    */
   constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
-    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 7, maxStepsPerGame)
+    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame)
   }
 }
 

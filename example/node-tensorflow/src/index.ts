@@ -292,7 +292,7 @@ class NodeTensorflow {
     let bestAction: number;
 
     // @ts-ignore
-    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
+    for (const action of [-1, 0, 1, 2, 3, 4, 5, 6]) {
       const rawState = this.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
       const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
 
