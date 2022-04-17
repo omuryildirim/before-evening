@@ -39,7 +39,6 @@ class NodeTensorflow {
     this.gamesPerIteration = '100';
     this.maxStepsPerGame = '3000';
     this.discountRate = '0.95';
-    this.trainButtonText = 'Train';
     this.iterationStatus = '';
     this.iterationProgress = 0;
     this.gameStatus = '';
@@ -129,10 +128,8 @@ class NodeTensorflow {
     const memory = new Memory(maxStepsPerGame);
 
     for (let i = 0; i < numGames; ++i) {
-      // Randomly initialize the state of the cart-pole system at the beginning
       // Randomly initialize the state of the system at the beginning
       // of every game.
-      this.beforeEvening.resetGame();
       this.beforeEvening.resetGame(true);
       const totalAward = await this.runOneEpisode(discountRate, maxStepsPerGame, memory);
       maxAward.push(totalAward);
@@ -202,19 +199,24 @@ class NodeTensorflow {
       this.beforeEvening.changeDirectionAccordingToKey(eventKey, 'down');
     });
 
-    return { action: action, remainingSteps: remainingSteps - 1 };
     return {action: action, remainingSteps: remainingSteps - 1};
   }
 
   private static computeReward(position: number, speed: number) {
-    let reward = 0;
+    let reward;
+    // position can be between -3:3
+    // if position is not in range -1:1 that means car is out of bounds
     if (position < -1 || position > 1) {
-      reward = -10 + (-40 * (Math.abs(position) - 1));
+      // max minus 50 reward if car is not in road
+      reward = -10 + (-20 * (Math.abs(position) - 1));
     } else {
+      // max 100 reward if car is inside the road
+      // min 10 reward if car is inside the road
       reward = 100 - (90 * Math.abs(position));
     }
 
-    reward -= 100 * (1 - speed);
+    // max minus 50 reward if speed is not max
+    reward -= 50 * (1 - speed);
 
     return reward;
   }
@@ -285,7 +287,6 @@ class NodeTensorflow {
     }
   }
 
-  private createNewDatasetPoint(state: StateUpdate) {
   private createNewDatasetPoint(state: StateUpdate, epsilon: number, action: number) {
     let bestReward = -100000000000;
     let bestAction: number;
