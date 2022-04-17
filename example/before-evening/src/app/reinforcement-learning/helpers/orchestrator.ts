@@ -5,6 +5,7 @@ import * as tf from '@tensorflow/tfjs';
 import {GameStateService} from "../../game-state.service";
 import {ActionMap} from "../reinforcement-learning.types";
 import {takeUntil} from "rxjs/operators";
+import {ActionKeyEventMapper} from "./action-key-event-mapper";
 
 const MIN_EPSILON = 0.01;
 const MAX_EPSILON = 0.2;
@@ -21,6 +22,9 @@ export class Orchestrator {
   maxPositionStore: number[];
   private gameStateService: GameStateService;
   private remainingSteps: number;
+
+  public totalActions = 0;
+  public totalCorrectActions = 0;
 
   /**
    * @param {ReinforcementLearningModel} model
@@ -114,6 +118,28 @@ export class Orchestrator {
     return {action: action, remainingSteps: remainingSteps - 1};
   }
 
+  takePredictedAction(state: tf.Tensor2D) {
+    const action = this.model.chooseAction(state, this.eps, true);
+    let bestAction: number;
+    let bestReward: number = -10000000000;
+
+    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
+      const rawState = this.gameStateService.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
+      const reward = this.computeReward(rawState.playerX, rawState.speed);
+
+      if (reward > bestReward) {
+        bestReward = reward;
+        bestAction = action;
+      }
+    }
+
+    this.totalActions += 1;
+    this.totalCorrectActions += action === bestAction ? 1:0;
+    document.querySelector(".note").innerHTML = "%" + this.totalCorrectActions*100/this.totalActions;
+
+    this.gameStateService.dispatchAnAction(ActionMap[action]);
+  }
+
   async replay() {
     // Sample from memory
     const batch = this.memory.sample(this.model.batchSize);
@@ -165,7 +191,7 @@ export class Orchestrator {
     this.gameStateService.stateUpdater.pipe(takeUntil(this.gameStateService.stopTest))
       .subscribe(rawState => {
         const state = ReinforcementLearningModel.getState(rawState);
-        this.takeAction(state, 0);
+        this.takePredictedAction(state);
       });
   }
 }
