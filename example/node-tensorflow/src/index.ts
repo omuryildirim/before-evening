@@ -33,7 +33,7 @@ class NodeTensorflow {
   private startTime: Date;
 
   constructor() {
-    this.hiddenLayerSize = '128';
+    this.hiddenLayerSize = '1024';
     this.storedModelStatus = 'N/A';
     this.numberOfIterations = '20';
     this.gamesPerIteration = '100';
