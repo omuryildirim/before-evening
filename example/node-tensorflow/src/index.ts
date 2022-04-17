@@ -19,7 +19,6 @@ class NodeTensorflow {
   private policyNet: SaveablePolicyNetwork;
   public hiddenLayerSize: string;
   public storedModelStatus: string;
-  public trainButtonText: string;
   public numberOfIterations: string;
   public gamesPerIteration: string;
   public maxStepsPerGame: string;
@@ -30,7 +29,8 @@ class NodeTensorflow {
   public gameStatus: string;
   public gameProgress: number;
   private beforeEvening: BeforeEvening;
-  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; } }[];
+  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; }; selectedAction: {key: number; value: string; epsilon: number;} }[];
+  private startTime: Date;
 
   constructor() {
     this.hiddenLayerSize = '128';
@@ -45,6 +45,7 @@ class NodeTensorflow {
     this.gameStatus = '';
     this.gameProgress = 0;
     this.dataset = [];
+    this.startTime = new Date();
 
     this.initialize();
   }
@@ -129,8 +130,10 @@ class NodeTensorflow {
 
     for (let i = 0; i < numGames; ++i) {
       // Randomly initialize the state of the cart-pole system at the beginning
+      // Randomly initialize the state of the system at the beginning
       // of every game.
       this.beforeEvening.resetGame();
+      this.beforeEvening.resetGame(true);
       const totalAward = await this.runOneEpisode(discountRate, maxStepsPerGame, memory);
       maxAward.push(totalAward);
       this.onGameEnd(i + 1, numGames);
@@ -152,12 +155,12 @@ class NodeTensorflow {
 
     const isFinished = async (resolve) => {
       while (remainingSteps) {
-        // Log state to dataset
-        this.createNewDatasetPoint(rawState);
-
         // Exponentially decay the exploration parameter
         const epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * currentStep);
         const actionMap = this.takeAction(state, remainingSteps, previousAction, epsilon);
+
+        // Log state to dataset
+        this.createNewDatasetPoint(rawState, epsilon, actionMap.action);
 
         const action = actionMap.action;
         remainingSteps = actionMap.remainingSteps;
@@ -200,6 +203,7 @@ class NodeTensorflow {
     });
 
     return { action: action, remainingSteps: remainingSteps - 1 };
+    return {action: action, remainingSteps: remainingSteps - 1};
   }
 
   private static computeReward(position: number, speed: number) {
@@ -218,7 +222,7 @@ class NodeTensorflow {
   private async educateTheNet(memory: Memory, discountRate: number) {
     // Sample from memory
     const batch = memory.sample(this.policyNet.model.batchSize);
-    const states = batch.map(([state, , ]) => state);
+    const states = batch.map(([state, ,]) => state);
     const nextStates = batch.map(
       ([, , , nextState]) => nextState ? nextState : tf.zeros([this.policyNet.model.numStates])
     );
@@ -274,6 +278,7 @@ class NodeTensorflow {
     this.gameProgress = gameCount / totalGames * 100;
 
     console.log('*********', '\n', this.iterationStatus, '\n', this.gameStatus, '\n');
+    console.log(this.getPassedTime())
 
     if (gameCount === totalGames) {
       this.gameStatus = 'Updating weights...';
@@ -281,6 +286,7 @@ class NodeTensorflow {
   }
 
   private createNewDatasetPoint(state: StateUpdate) {
+  private createNewDatasetPoint(state: StateUpdate, epsilon: number, action: number) {
     let bestReward = -100000000000;
     let bestAction: number;
 
@@ -298,15 +304,29 @@ class NodeTensorflow {
       // console.log(state, rawState, reward, action);
     }
 
-    this.dataset.push({state: [state.playerX, ...state.next5Curve, state.speed], action: {key: bestAction, value: ActionKeyToEventName[bestAction]}});
+    this.dataset.push({
+      state: [state.playerX, ...state.next5Curve, state.speed] as any,
+      action: {key: bestAction, value: ActionKeyToEventName[bestAction]},
+      selectedAction: {key: action, value: ActionKeyToEventName[action], epsilon}
+    });
   }
 
   private writeLogToFile() {
     const logStream = fs.createWriteStream('dataset.txt', {flags: 'a'});
-    this.dataset.forEach((action) => { logStream.write(JSON.stringify(action) + '\n'); });
+    this.dataset.forEach((action) => {
+      logStream.write(JSON.stringify(action) + '\n');
+    });
     logStream.end();
 
     this.dataset = [];
+  }
+
+  private getPassedTime() {
+    const minutes = (new Date().getTime() - this.startTime.getTime()) / 1000 / 60;
+    const hours = Math.floor(minutes / 60);
+    const seconds = (((minutes * 100) % 100) / 100 ) * 60
+
+    return `Total time: ${hours} hours ${minutes.toFixed()} minutes ${seconds.toFixed()} seconds`;
   }
 }
 
