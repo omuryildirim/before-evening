@@ -1,13 +1,9 @@
 import * as tf from '@tensorflow/tfjs';
+import {BeforeEvening, StateUpdate} from '../../../src';
 
-import { BeforeEvening } from '../../../build/main';
-
-import { Memory } from './memory';
-import { SaveablePolicyNetwork } from './policy-network';
-import {
-  ReinforcementLearningModel,
-  StateUpdate
-} from './reinforcement-learning.model';
+import {Memory} from './memory';
+import {SaveablePolicyNetwork} from './policy-network';
+import {ReinforcementLearningModel,} from './reinforcement-learning.model';
 import {
   ActionKeyEventMapper,
   ActionKeyToEventName
