@@ -1,10 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-
-export interface StateUpdate {
-  playerX: number;
-  speed: number;
-  next5Curve: [number, number, number, number, number];
-}
+import {StateUpdate} from "../../../src";
 
 export class ReinforcementLearningModel {
   public numStates: number;
