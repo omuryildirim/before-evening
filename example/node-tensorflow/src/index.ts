@@ -11,8 +11,8 @@ import {
 
 import * as fs from 'fs';
 
-const MIN_EPSILON = 0.01;
-const MAX_EPSILON = 0.2;
+const MIN_EPSILON = 0.5;
+const MAX_EPSILON = 0.8;
 const LAMBDA = 0.01;
 
 class NodeTensorflow {
