@@ -69,7 +69,7 @@ class PolicyNetwork {
 }
 
 // The IndexedDB path where the model of the policy network will be saved.
-const MODEL_VERSION = 'before-evening-v5';
+const MODEL_VERSION = 'before-evening-v6';
 const MODEL_SAVE_PATH_ = 'file://./' + MODEL_VERSION;
 
 /**
@@ -101,7 +101,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @throws {Error} If no model can be found in IndexedDB.
    */
   static async loadModel(maxStepsPerGame: number) {
-    const handler = tf.io.fileSystem('./before-evening-v3');
+    const handler = tf.io.fileSystem('./' + MODEL_VERSION);
     if (handler) {
       console.log(`Loading existing model...`);
       const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
