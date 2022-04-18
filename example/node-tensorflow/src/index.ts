@@ -1,13 +1,9 @@
 import * as tf from '@tensorflow/tfjs';
+import {BeforeEvening, StateUpdate} from '../../../src';
 
-import { BeforeEvening } from '../../../build/main';
-
-import { Memory } from './memory';
-import { SaveablePolicyNetwork } from './policy-network';
-import {
-  ReinforcementLearningModel,
-  StateUpdate
-} from './reinforcement-learning.model';
+import {Memory} from './memory';
+import {SaveablePolicyNetwork} from './policy-network';
+import {ReinforcementLearningModel,} from './reinforcement-learning.model';
 import {
   ActionKeyEventMapper,
   ActionKeyToEventName
@@ -15,15 +11,14 @@ import {
 
 import * as fs from 'fs';
 
-const MIN_EPSILON = 0.01;
-const MAX_EPSILON = 0.2;
+const MIN_EPSILON = 0.5;
+const MAX_EPSILON = 0.8;
 const LAMBDA = 0.01;
 
 class NodeTensorflow {
   private policyNet: SaveablePolicyNetwork;
   public hiddenLayerSize: string;
   public storedModelStatus: string;
-  public trainButtonText: string;
   public numberOfIterations: string;
   public gamesPerIteration: string;
   public maxStepsPerGame: string;
@@ -34,21 +29,22 @@ class NodeTensorflow {
   public gameStatus: string;
   public gameProgress: number;
   private beforeEvening: BeforeEvening;
-  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; } }[];
+  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; }; selectedAction: {key: number; value: string; epsilon: number;}; relativeReward: number; reward: number; }[];
+  private startTime: Date;
 
   constructor() {
-    this.hiddenLayerSize = '128';
+    this.hiddenLayerSize = '1024';
     this.storedModelStatus = 'N/A';
-    this.numberOfIterations = '20';
+    this.numberOfIterations = '50';
     this.gamesPerIteration = '100';
-    this.maxStepsPerGame = '3000';
+    this.maxStepsPerGame = '1000';
     this.discountRate = '0.95';
-    this.trainButtonText = 'Train';
     this.iterationStatus = '';
     this.iterationProgress = 0;
     this.gameStatus = '';
     this.gameProgress = 0;
     this.dataset = [];
+    this.startTime = new Date();
 
     this.initialize();
   }
@@ -62,11 +58,10 @@ class NodeTensorflow {
       this.createModel();
     }
 
-    this.beforeEvening = new BeforeEvening('straight');
+    this.beforeEvening = new BeforeEvening();
 
     await this.train();
   };
-
 
   public async createModel() {
     const hiddenLayerSizes: any = this.hiddenLayerSize.trim().split(',').map(v => {
@@ -132,9 +127,9 @@ class NodeTensorflow {
     const memory = new Memory(maxStepsPerGame);
 
     for (let i = 0; i < numGames; ++i) {
-      // Randomly initialize the state of the cart-pole system at the beginning
+      // Randomly initialize the state of the system at the beginning
       // of every game.
-      this.beforeEvening.resetGame();
+      this.beforeEvening.resetGame(true);
       const totalAward = await this.runOneEpisode(discountRate, maxStepsPerGame, memory);
       maxAward.push(totalAward);
       this.onGameEnd(i + 1, numGames);
@@ -155,10 +150,8 @@ class NodeTensorflow {
     let currentStep = 0;
 
     const isFinished = async (resolve) => {
+      let previousReward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
       while (remainingSteps) {
-        // Log state to dataset
-        this.createNewDatasetPoint(rawState);
-
         // Exponentially decay the exploration parameter
         const epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * currentStep);
         const actionMap = this.takeAction(state, remainingSteps, previousAction, epsilon);
@@ -172,15 +165,23 @@ class NodeTensorflow {
         const nextState = ReinforcementLearningModel.getState(rawState);
         const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
 
-        // Keep the car on max position if reached
-        memory.addSample([state, action, reward, nextState]);
+        const relativeReward = NodeTensorflow.computeRelativeReward({reward, previousReward, x: rawState.playerX, speed: rawState.speed})
+
+        // add sample to memory
+        // important: action is between -1 and 6. But for the model it's between 0 and 7.
+        // so we need to add 1 to selected action before feed it to network
+        memory.addSample([state, action + 1, relativeReward, nextState]);
+
+        // Log state to dataset
+        this.createNewDatasetPoint(rawState, epsilon, actionMap.action, relativeReward, reward);
 
         currentStep += 1;
 
         state = nextState;
-        totalReward += reward;
+        totalReward += relativeReward;
 
         previousAction = action;
+        previousReward = reward;
       }
 
       await this.educateTheNet(memory, discountRate);
@@ -203,34 +204,63 @@ class NodeTensorflow {
       this.beforeEvening.changeDirectionAccordingToKey(eventKey, 'down');
     });
 
-    return { action: action, remainingSteps: remainingSteps - 1 };
+    return {action: action, remainingSteps: remainingSteps - 1};
   }
 
   private static computeReward(position: number, speed: number) {
-    let reward = 0;
+    let reward;
+    // position can be between -3:3
+    // if position is not in range -1:1 that means car is out of bounds
     if (position < -1 || position > 1) {
-      reward = -10 + (-40 * (Math.abs(position) - 1));
+      // max minus 50 reward if car is not in road
+      reward = -10 + (-20 * (Math.abs(position) - 1));
     } else {
+      // max 100 reward if car is inside the road
+      // min 10 reward if car is inside the road
       reward = 100 - (90 * Math.abs(position));
     }
 
-    reward -= 100 * (1 - speed);
+    // max minus 50 reward if speed is not max
+    reward -= 50 * (1 - speed);
 
     return reward;
+  }
+
+  private static computeRelativeReward({reward, previousReward, x, speed}: {reward: number; previousReward: number; x: number; speed: number;}) {
+    // relative reward is the evaluation of current state compared to previous state
+    // in this way we hope to evaluate the action based on the change happened
+    // rather than the current state's positivity.
+    //
+    // for example if car is in the middle of the road at max speed, if model picks
+    // a left move, car will slow down and move from center. But because of the new state
+    // is very near to the perfect position reward of state will close to max reward.
+    // But in practice the action have a negative impact on car's movement.
+    let relativeReward = reward - previousReward;
+
+    // if relative reward is zero and car is not at the center of road or speed is not at max
+    // then return min possible reward
+    if (relativeReward === 0 && (x !== 0 || speed !== 1)) {
+      return -100;
+    }
+
+    // because of the change of position will be so low due to fact that each action will
+    // take nearly 0.01 seconds, relative reward will be too low. Between 0.20 and -0.35
+    // thus we magnify the relative reward to increase the effect of decision
+    return relativeReward * 1000;
   }
 
   private async educateTheNet(memory: Memory, discountRate: number) {
     // Sample from memory
     const batch = memory.sample(this.policyNet.model.batchSize);
-    const states = batch.map(([state, , ]) => state);
+    const states = batch.map(([state, ,]) => state);
     const nextStates = batch.map(
       ([, , , nextState]) => nextState ? nextState : tf.zeros([this.policyNet.model.numStates])
     );
 
     // Predict the values of each action at each state
-    const qsa = states.map((state) => this.policyNet.model.predict(state));
+    const qsa = states.map((state) => this.policyNet.model.predictNextActionQ(state));
     // Predict the values of each action at each next state
-    const qsad = nextStates.map((nextState) => this.policyNet.model.predict(nextState));
+    const qsad = nextStates.map((nextState) => this.policyNet.model.predictNextActionQ(nextState));
 
     let x: any = [];
     let y: any = [];
@@ -239,10 +269,10 @@ class NodeTensorflow {
     batch.forEach(
       ([state, action, reward, nextState], index) => {
         if (qsa[index]) {
-          const currentQ = qsa[index];
+          const currentQ = qsa[index].dataSync();
           currentQ[action] = nextState ? reward + discountRate * qsad[index].max().dataSync() : reward;
           x.push(state.dataSync());
-          y.push(currentQ.dataSync());
+          y.push(currentQ);
         } else {
           qsa.splice(index, 1);
           qsad.splice(index, 1);
@@ -278,18 +308,19 @@ class NodeTensorflow {
     this.gameProgress = gameCount / totalGames * 100;
 
     console.log('*********', '\n', this.iterationStatus, '\n', this.gameStatus, '\n');
+    console.log(this.getPassedTime())
 
     if (gameCount === totalGames) {
       this.gameStatus = 'Updating weights...';
     }
   }
 
-  private createNewDatasetPoint(state: StateUpdate) {
+  private createNewDatasetPoint(state: StateUpdate, epsilon: number, action: number, relativeReward: number, reward: number) {
     let bestReward = -100000000000;
     let bestAction: number;
 
     // @ts-ignore
-    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
+    for (const action of [-1, 0, 1, 2, 3, 4, 5, 6]) {
       const rawState = this.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
       const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
 
@@ -302,15 +333,31 @@ class NodeTensorflow {
       // console.log(state, rawState, reward, action);
     }
 
-    this.dataset.push({state: [state.playerX, ...state.next5Curve, state.speed], action: {key: bestAction, value: ActionKeyToEventName[bestAction]}});
+    this.dataset.push({
+      state: [state.playerX, ...state.next5Curve, state.speed] as any,
+      action: {key: bestAction, value: ActionKeyToEventName[bestAction]},
+      selectedAction: {key: action, value: ActionKeyToEventName[action], epsilon},
+      relativeReward,
+      reward
+    });
   }
 
   private writeLogToFile() {
     const logStream = fs.createWriteStream('dataset.txt', {flags: 'a'});
-    this.dataset.forEach((action) => { logStream.write(JSON.stringify(action) + '\n'); });
+    this.dataset.forEach((action) => {
+      logStream.write(JSON.stringify(action) + '\n');
+    });
     logStream.end();
 
     this.dataset = [];
+  }
+
+  private getPassedTime() {
+    const minutes = (new Date().getTime() - this.startTime.getTime()) / 1000 / 60;
+    const hours = Math.floor(minutes / 60);
+    const seconds = (((minutes * 100) % 100) / 100 ) * 60
+
+    return `Total time: ${hours} hours ${(minutes - hours*60).toFixed()} minutes ${seconds.toFixed()} seconds`;
   }
 }
 

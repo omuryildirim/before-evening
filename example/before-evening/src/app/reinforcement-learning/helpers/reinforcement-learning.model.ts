@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import {StateUpdate} from "before-evening/build/main/interfaces/state.interfaces";
+import {StateUpdate} from "../../../../../../src";
 
 export class ReinforcementLearningModel {
   public numStates: number;
@@ -70,10 +70,11 @@ export class ReinforcementLearningModel {
   /**
    * @param state
    * @param eps
+   * @param predict
    * @returns {number} The action chosen by the model (-1 : 6)
    */
-  chooseAction(state: tf.Tensor2D, eps: number) {
-    if (Math.random() < eps) {
+  chooseAction(state: tf.Tensor2D, eps: number, predict?: boolean) {
+    if (Math.random() < eps && !predict) {
       return Math.floor(Math.random() * this.numActions) - 1;
     } else {
       return tf.tidy(() => {
