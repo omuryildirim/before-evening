@@ -29,7 +29,7 @@ class NodeTensorflow {
   public gameStatus: string;
   public gameProgress: number;
   private beforeEvening: BeforeEvening;
-  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; }; selectedAction: {key: number; value: string; epsilon: number;} }[];
+  private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; }; selectedAction: {key: number; value: string; epsilon: number;}; relativeReward: number; reward: number; }[];
   private startTime: Date;
 
   constructor() {
@@ -62,7 +62,6 @@ class NodeTensorflow {
 
     await this.train();
   };
-
 
   public async createModel() {
     const hiddenLayerSizes: any = this.hiddenLayerSize.trim().split(',').map(v => {
@@ -157,9 +156,6 @@ class NodeTensorflow {
         const epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * currentStep);
         const actionMap = this.takeAction(state, remainingSteps, previousAction, epsilon);
 
-        // Log state to dataset
-        this.createNewDatasetPoint(rawState, epsilon, actionMap.action);
-
         const action = actionMap.action;
         remainingSteps = actionMap.remainingSteps;
 
@@ -173,6 +169,8 @@ class NodeTensorflow {
 
         // Keep the car on max position if reached
         memory.addSample([state, action, relativeReward, nextState]);
+        // Log state to dataset
+        this.createNewDatasetPoint(rawState, epsilon, actionMap.action, relativeReward, reward);
 
         currentStep += 1;
 
