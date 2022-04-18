@@ -258,9 +258,9 @@ class NodeTensorflow {
     );
 
     // Predict the values of each action at each state
-    const qsa = states.map((state) => this.policyNet.model.predict(state));
+    const qsa = states.map((state) => this.policyNet.model.predictNextActionQ(state));
     // Predict the values of each action at each next state
-    const qsad = nextStates.map((nextState) => this.policyNet.model.predict(nextState));
+    const qsad = nextStates.map((nextState) => this.policyNet.model.predictNextActionQ(nextState));
 
     let x: any = [];
     let y: any = [];
@@ -315,7 +315,7 @@ class NodeTensorflow {
     }
   }
 
-  private createNewDatasetPoint(state: StateUpdate, epsilon: number, action: number) {
+  private createNewDatasetPoint(state: StateUpdate, epsilon: number, action: number, relativeReward: number, reward: number) {
     let bestReward = -100000000000;
     let bestAction: number;
 
@@ -336,7 +336,9 @@ class NodeTensorflow {
     this.dataset.push({
       state: [state.playerX, ...state.next5Curve, state.speed] as any,
       action: {key: bestAction, value: ActionKeyToEventName[bestAction]},
-      selectedAction: {key: action, value: ActionKeyToEventName[action], epsilon}
+      selectedAction: {key: action, value: ActionKeyToEventName[action], epsilon},
+      relativeReward,
+      reward
     });
   }
 
