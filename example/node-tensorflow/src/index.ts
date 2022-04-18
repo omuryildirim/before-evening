@@ -357,7 +357,7 @@ class NodeTensorflow {
     const hours = Math.floor(minutes / 60);
     const seconds = (((minutes * 100) % 100) / 100 ) * 60
 
-    return `Total time: ${hours} hours ${minutes.toFixed()} minutes ${seconds.toFixed()} seconds`;
+    return `Total time: ${hours} hours ${(minutes - hours*60).toFixed()} minutes ${seconds.toFixed()} seconds`;
   }
 }
 
