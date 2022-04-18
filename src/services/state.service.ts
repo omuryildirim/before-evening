@@ -304,7 +304,7 @@ export class StateService {
     this.keySlower = false;
 
     if (randomizeStartPoint) {
-      this.playerX = Math.random() - 0.5;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
+      this.playerX = Math.random() * 2 - 1;                       // player x offset from center of road (-1 to 1 to stay independent of roadWidth)
       this.position = Math.random() * this.trackLength;                       // current camera Z position (add playerZ to get player's absolute Z position)
       this.speed = Math.random() * this.maxSpeed;                       // current speed
     }
