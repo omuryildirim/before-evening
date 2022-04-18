@@ -167,8 +167,11 @@ class NodeTensorflow {
 
         const relativeReward = NodeTensorflow.computeRelativeReward({reward, previousReward, x: rawState.playerX, speed: rawState.speed})
 
-        // Keep the car on max position if reached
-        memory.addSample([state, action, relativeReward, nextState]);
+        // add sample to memory
+        // important: action is between -1 and 6. But for the model it's between 0 and 7.
+        // so we need to add 1 to selected action before feed it to network
+        memory.addSample([state, action + 1, relativeReward, nextState]);
+
         // Log state to dataset
         this.createNewDatasetPoint(rawState, epsilon, actionMap.action, relativeReward, reward);
 
