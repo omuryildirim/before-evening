@@ -119,17 +119,17 @@ export class Orchestrator {
   }
 
   takePredictedAction(state: tf.Tensor2D) {
-    const action = this.model.chooseAction(state, this.eps, true);
+    const action = this.model.predictAction(state);
     let bestAction: number;
     let bestReward: number = -10000000000;
 
-    for (const action of [-1, 0, 1, 2, 3, 4, 5]) {
-      const rawState = this.gameStateService.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
+    for (const testAction of [-1, 0, 1, 2, 3, 4, 5]) {
+      const rawState = this.gameStateService.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(testAction));
       const reward = this.computeReward(rawState.playerX, rawState.speed);
 
       if (reward > bestReward) {
         bestReward = reward;
-        bestAction = action;
+        bestAction = testAction;
       }
     }
 
