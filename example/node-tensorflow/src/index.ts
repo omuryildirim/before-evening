@@ -240,7 +240,10 @@ class NodeTensorflow {
       return -100;
     }
 
-    return relativeReward;
+    // because of the change of position will be so low due to fact that each action will
+    // take nearly 0.01 seconds, relative reward will be too low. Between 0.20 and -0.35
+    // thus we magnify the relative reward to increase the effect of decision
+    return relativeReward * 1000;
   }
 
   private async educateTheNet(memory: Memory, discountRate: number) {
