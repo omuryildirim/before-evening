@@ -269,10 +269,10 @@ class NodeTensorflow {
     batch.forEach(
       ([state, action, reward, nextState], index) => {
         if (qsa[index]) {
-          const currentQ = qsa[index];
+          const currentQ = qsa[index].dataSync();
           currentQ[action] = nextState ? reward + discountRate * qsad[index].max().dataSync() : reward;
           x.push(state.dataSync());
-          y.push(currentQ.dataSync());
+          y.push(currentQ);
         } else {
           qsa.splice(index, 1);
           qsad.splice(index, 1);
