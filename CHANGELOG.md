@@ -1,3 +1,10 @@
+## [0.3.0] - 2022-04-19
+
+### Changed
+- Solved Q-learning reward paradigm
+- Fixed Q-table update algorithm
+- Trained first working model
+
 ## [0.2.2] - 2020-10-17
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "before-evening",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Before evening",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
