@@ -49,15 +49,24 @@ export class ReinforcementLearningModel {
 
   /**
    * @param {tf.Tensor | tf.Tensor[]} states
-   * @returns {tf.Tensor | tf.Tensor} The predictions of the best actions
+   * @returns {tf.Tensor | tf.Tensor} The predictions of the state
    */
-  public predict(states: tf.Tensor) {
+  public predictNextActionQ(states: tf.Tensor) {
     if (states.isDisposed) {
       console.log(states);
       return null;
     } else {
       return tf.tidy(() => this.network.predict(states as any) as any);
     }
+  }
+
+  /**
+   * @param {tf.Tensor | tf.Tensor[]} states
+   * @returns {tf.Tensor | tf.Tensor} The predictions of the best action
+   */
+  private predictAction(states: tf.Tensor) {
+    const prediction = tf.tidy(() => (this.network.predict(states) as tf.Tensor<tf.Rank>).dataSync()) as Float32Array;
+    return prediction.indexOf(Math.max(...Array.from(prediction.values()))) - 1;
   }
 
   /**
@@ -77,12 +86,7 @@ export class ReinforcementLearningModel {
     if (Math.random() < eps) {
       return Math.floor(Math.random() * this.numActions) - 1;
     } else {
-      return tf.tidy(() => {
-        const logits: any = this.network.predict(state as any);
-        const sigmoid = tf.sigmoid(logits);
-        const probs: any = tf.div(sigmoid, tf.sum(sigmoid));
-        return tf.multinomial(probs, 1).dataSync()[0] - 1;
-      });
+      return this.predictAction(state);
     }
   }
 
