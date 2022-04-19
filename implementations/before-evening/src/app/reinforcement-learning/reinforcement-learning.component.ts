@@ -1,7 +1,12 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {SaveablePolicyNetwork} from "./helpers/policy-network";
-import {GameStateService} from "../game-state.service";
 import * as tf from "@tensorflow/tfjs";
+
+import {Memory} from "../../../../shared/memory";
+import {SaveablePolicyNetwork} from "../../../../shared/policy-network";
+import {GameStateService} from "../game-state.service";
+
+
+import {Orchestrator} from "./helpers/orchestrator";
 
 @Component({
   selector: 'reinforcement-learning',
@@ -61,7 +66,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   private async initializeView() {
     if (await SaveablePolicyNetwork.checkStoredModelStatus() != null) {
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(this.gameStateService, maxStepsPerGame);
+      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     }
     await this.updateUIControlState();
@@ -80,7 +85,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       });
 
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = new SaveablePolicyNetwork(hiddenLayerSizes, maxStepsPerGame, this.gameStateService);
+      this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame});
       await this.policyNet.saveModel();
 
       await this.updateUIControlState();
@@ -142,12 +147,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       this.onIterationEnd(0, trainIterations);
       this.stopRequested = false;
       for (let i = 0; i < trainIterations; ++i) {
-        const maxPosition = await this.policyNet.train(
-          discountRate,
-          gamesPerIteration,
-          maxStepsPerGame,
-          this.onGameEnd.bind(this)
-        );
+        const maxPosition = await this.trainV2();
         this.maxPositionValues.push({x: i + 1, y: maxPosition});
         this.bestPositionText = `Best position was ${maxPosition}`;
         this.onIterationEnd(i + 1, trainIterations);
@@ -164,7 +164,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     this.testState = !this.testState;
 
     if(this.testState) {
-      this.policyNet.test();
+      this.testV2();
     } else {
       this.gameStateService.stopTest.next(true);
     }
@@ -194,5 +194,58 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     if (gameCount === totalGames) {
       this.gameStatus = 'Updating weights...';
     }
+  }
+
+    /**
+   * Train the policy network's model.
+   *
+   * @returns {number[]} The number of steps completed in the `numGames` games
+   *   in this round of training.
+   */
+  private async trainV2() {
+    const maxPositionStore: number[] = [];
+    this.onGameEnd(0, this.parsedGamesPerIteration);
+    let memory = new Memory(this.parsedMaxStepsPerGame);
+    for (let i = 0; i < this.parsedGamesPerIteration; ++i) {
+      // Randomly initialize the state of the cart-pole system at the beginning
+      // of every game.
+      this.gameStateService.refreshGame.next();
+      const orchestrator = new Orchestrator(
+        this.policyNet,
+        memory,
+        this.parsedDiscountRate,
+        this.parsedMaxStepsPerGame,
+        this.gameStateService
+      );
+      await orchestrator.run();
+      maxPositionStore.push(orchestrator.maxPositionStore[orchestrator.maxPositionStore.length - 1]);
+      this.onGameEnd(i + 1, this.parsedGamesPerIteration);
+      memory = new Memory(this.parsedMaxStepsPerGame);
+    }
+    return Math.max(...maxPositionStore);
+  }
+
+  private testV2() {
+    const memory = new Memory(this.parsedMaxStepsPerGame);
+    const orchestrator = new Orchestrator(
+      this.policyNet,
+      memory,
+      0,
+      0,
+      this.gameStateService
+    );
+    orchestrator.test();
+  }
+
+  get parsedMaxStepsPerGame() {
+    return parseInt(this.maxStepsPerGame);
+  }
+
+  get parsedGamesPerIteration() {
+    return parseInt(this.gamesPerIteration);
+  }
+
+  get parsedDiscountRate() {
+    return parseInt(this.discountRate);
   }
 }

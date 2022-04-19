@@ -1,15 +1,16 @@
-import * as tf from '@tensorflow/tfjs';
-import {BeforeEvening, StateUpdate} from '../../../src';
+import * as fs from 'fs';
 
-import {Memory} from './memory';
-import {SaveablePolicyNetwork} from './policy-network';
-import {ReinforcementLearningModel,} from './reinforcement-learning.model';
+import * as tf from '@tensorflow/tfjs';
+
+import {BeforeEvening, StateUpdate} from '../../../src';
 import {
   ActionKeyEventMapper,
   ActionKeyToEventName
-} from './action-key-event-mapper';
+} from '../../shared/action-key-event-mapper';
+import {Memory} from '../../shared/memory';
+import {SaveablePolicyNetwork} from '../../shared/policy-network';
+import {ReinforcementLearningModel,} from '../../shared/reinforcement-learning.model';
 
-import * as fs from 'fs';
 
 const MIN_EPSILON = 0.5;
 const MAX_EPSILON = 0.8;
@@ -64,7 +65,7 @@ class NodeTensorflow {
   };
 
   public async createModel() {
-    const hiddenLayerSizes: any = this.hiddenLayerSize.trim().split(',').map(v => {
+    const hiddenLayerSizes = this.hiddenLayerSize.trim().split(',').map(v => {
       const num = Number.parseInt(v.trim());
       if (!(num > 0)) {
         throw new Error(
@@ -75,7 +76,7 @@ class NodeTensorflow {
     });
 
     const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    this.policyNet = new SaveablePolicyNetwork(hiddenLayerSizes, maxStepsPerGame);
+    this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame});
   }
 
   public async deleteStoredModel() {
@@ -150,7 +151,7 @@ class NodeTensorflow {
     let currentStep = 0;
 
     const isFinished = async (resolve) => {
-      let previousReward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
+      let previousReward = ReinforcementLearningModel.computeReward(rawState.playerX, rawState.speed);
       while (remainingSteps) {
         // Exponentially decay the exploration parameter
         const epsilon = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * currentStep);
@@ -163,9 +164,9 @@ class NodeTensorflow {
         rawState = this.beforeEvening.simulateState();
 
         const nextState = ReinforcementLearningModel.getState(rawState);
-        const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
+        const reward = ReinforcementLearningModel.computeReward(rawState.playerX, rawState.speed);
 
-        const relativeReward = NodeTensorflow.computeRelativeReward({reward, previousReward, x: rawState.playerX, speed: rawState.speed})
+        const relativeReward = ReinforcementLearningModel.computeRelativeReward({reward, previousReward, x: rawState.playerX, speed: rawState.speed})
 
         // add sample to memory
         // important: action is between -1 and 6. But for the model it's between 0 and 7.
@@ -184,7 +185,7 @@ class NodeTensorflow {
         previousReward = reward;
       }
 
-      await this.educateTheNet(memory, discountRate);
+      await this.policyNet.educateTheNet(memory, discountRate);
       resolve(totalReward);
     };
 
@@ -205,94 +206,6 @@ class NodeTensorflow {
     });
 
     return {action: action, remainingSteps: remainingSteps - 1};
-  }
-
-  private static computeReward(position: number, speed: number) {
-    let reward;
-    // position can be between -3:3
-    // if position is not in range -1:1 that means car is out of bounds
-    if (position < -1 || position > 1) {
-      // max minus 50 reward if car is not in road
-      reward = -10 + (-20 * (Math.abs(position) - 1));
-    } else {
-      // max 100 reward if car is inside the road
-      // min 10 reward if car is inside the road
-      reward = 100 - (90 * Math.abs(position));
-    }
-
-    // max minus 50 reward if speed is not max
-    reward -= 50 * (1 - speed);
-
-    return reward;
-  }
-
-  private static computeRelativeReward({reward, previousReward, x, speed}: {reward: number; previousReward: number; x: number; speed: number;}) {
-    // relative reward is the evaluation of current state compared to previous state
-    // in this way we hope to evaluate the action based on the change happened
-    // rather than the current state's positivity.
-    //
-    // for example if car is in the middle of the road at max speed, if model picks
-    // a left move, car will slow down and move from center. But because of the new state
-    // is very near to the perfect position reward of state will close to max reward.
-    // But in practice the action have a negative impact on car's movement.
-    let relativeReward = reward - previousReward;
-
-    // if relative reward is zero and car is not at the center of road or speed is not at max
-    // then return min possible reward
-    if (relativeReward === 0 && (x !== 0 || speed !== 1)) {
-      return -100;
-    }
-
-    // because of the change of position will be so low due to fact that each action will
-    // take nearly 0.01 seconds, relative reward will be too low. Between 0.20 and -0.35
-    // thus we magnify the relative reward to increase the effect of decision
-    return relativeReward * 1000;
-  }
-
-  private async educateTheNet(memory: Memory, discountRate: number) {
-    // Sample from memory
-    const batch = memory.sample(this.policyNet.model.batchSize);
-    const states = batch.map(([state, ,]) => state);
-    const nextStates = batch.map(
-      ([, , , nextState]) => nextState ? nextState : tf.zeros([this.policyNet.model.numStates])
-    );
-
-    // Predict the values of each action at each state
-    const qsa = states.map((state) => this.policyNet.model.predictNextActionQ(state));
-    // Predict the values of each action at each next state
-    const qsad = nextStates.map((nextState) => this.policyNet.model.predictNextActionQ(nextState));
-
-    let x: any = [];
-    let y: any = [];
-
-    // Update the states rewards with the discounted next states rewards
-    batch.forEach(
-      ([state, action, reward, nextState], index) => {
-        if (qsa[index]) {
-          const currentQ = qsa[index].dataSync();
-          currentQ[action] = nextState ? reward + discountRate * qsad[index].max().dataSync() : reward;
-          x.push(state.dataSync());
-          y.push(currentQ);
-        } else {
-          qsa.splice(index, 1);
-          qsad.splice(index, 1);
-        }
-      }
-    );
-
-    // Clean unused tensors
-    qsa.forEach((state) => state.dispose());
-    qsad.forEach((state) => state.dispose());
-
-    // Reshape the batches to be fed to the network
-    x = tf.tensor2d(x, [x.length, this.policyNet.model.numStates]);
-    y = tf.tensor2d(y, [y.length, this.policyNet.model.numActions]);
-
-    // Learn the Q(s, a) values given associated discounted rewards
-    await this.policyNet.model.train(x, y);
-
-    x.dispose();
-    y.dispose();
   }
 
   private onIterationEnd(iterationCount: number, totalIterations: number) {
@@ -319,10 +232,9 @@ class NodeTensorflow {
     let bestReward = -100000000000;
     let bestAction: number;
 
-    // @ts-ignore
     for (const action of [-1, 0, 1, 2, 3, 4, 5, 6]) {
       const rawState = this.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(action));
-      const reward = NodeTensorflow.computeReward(rawState.playerX, rawState.speed);
+      const reward = ReinforcementLearningModel.computeReward(rawState.playerX, rawState.speed);
 
       if (reward > bestReward) {
         bestReward = reward;
@@ -334,7 +246,7 @@ class NodeTensorflow {
     }
 
     this.dataset.push({
-      state: [state.playerX, ...state.next5Curve, state.speed] as any,
+      state: [state.playerX, ...state.next5Curve, state.speed] as never,
       action: {key: bestAction, value: ActionKeyToEventName[bestAction]},
       selectedAction: {key: action, value: ActionKeyToEventName[action], epsilon},
       relativeReward,

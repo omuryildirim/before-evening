@@ -1,0 +1,16 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "",
+  "repository": "https://github.com/omuryildirim/before-evening",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tensorflow/tfjs": "2.4.0",
+    "@tensorflow/tfjs-node": "2.4.0",
+    "tfjs-node-save": "0.0.2"
+  }
+}

@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
-import {StateUpdate} from "../../../src";
+
+import {StateUpdate} from "../../src";
 
 export class ReinforcementLearningModel {
   public numStates: number;
@@ -61,10 +62,10 @@ export class ReinforcementLearningModel {
   }
 
   /**
-   * @param {tf.Tensor | tf.Tensor[]} states
-   * @returns {tf.Tensor | tf.Tensor} The predictions of the best action
+   * @param {: tf.Tensor | tf.Tensor2D} states
+   * @returns {number} The predictions of the best action
    */
-  private predictAction(states: tf.Tensor) {
+  public predictAction(states: tf.Tensor) {
     const prediction = tf.tidy(() => (this.network.predict(states) as tf.Tensor<tf.Rank>).dataSync()) as Float32Array;
     return prediction.indexOf(Math.max(...Array.from(prediction.values()))) - 1;
   }
@@ -73,7 +74,7 @@ export class ReinforcementLearningModel {
    * @param {tf.Tensor[]} xBatch
    * @param {tf.Tensor[]} yBatch
    */
-  async train(xBatch, yBatch) {
+  public async train(xBatch, yBatch) {
     await this.network.fit(xBatch, yBatch);
   }
 
@@ -82,7 +83,7 @@ export class ReinforcementLearningModel {
    * @param eps
    * @returns {number} The action chosen by the model (-1 : 6)
    */
-  chooseAction(state: tf.Tensor2D, eps: number) {
+  public chooseAction(state: tf.Tensor2D, eps: number) {
     if (Math.random() < eps) {
       return Math.floor(Math.random() * this.numActions) - 1;
     } else {
@@ -92,5 +93,47 @@ export class ReinforcementLearningModel {
 
   public static getState(state: StateUpdate): tf.Tensor2D {
     return tf.tensor2d([[state.playerX, ...state.next5Curve, state.speed]]);
+  }
+
+  public static computeReward(position: number, speed: number) {
+    let reward;
+    // position can be between -3:3
+    // if position is not in range -1:1 that means car is out of bounds
+    if (position < -1 || position > 1) {
+      // max minus 50 reward if car is not in road
+      reward = -10 + (-20 * (Math.abs(position) - 1));
+    } else {
+      // max 100 reward if car is inside the road
+      // min 10 reward if car is inside the road
+      reward = 100 - (90 * Math.abs(position));
+    }
+
+    // max minus 50 reward if speed is not max
+    reward -= 50 * (1 - speed);
+
+    return reward;
+  }
+
+  public static computeRelativeReward({reward, previousReward, x, speed}: {reward: number; previousReward: number; x: number; speed: number;}) {
+    // relative reward is the evaluation of current state compared to previous state
+    // in this way we hope to evaluate the action based on the change happened
+    // rather than the current state's positivity.
+    //
+    // for example if car is in the middle of the road at max speed, if model picks
+    // a left move, car will slow down and move from center. But because of the new state
+    // is very near to the perfect position reward of state will close to max reward.
+    // But in practice the action have a negative impact on car's movement.
+    const relativeReward = reward - previousReward;
+
+    // if relative reward is zero and car is not at the center of road or speed is not at max
+    // then return min possible reward
+    if (relativeReward === 0 && (x !== 0 || speed !== 1)) {
+      return -100;
+    }
+
+    // because of the change of position will be so low due to fact that each action will
+    // take nearly 0.01 seconds, relative reward will be too low. Between 0.20 and -0.35
+    // thus we magnify the relative reward to increase the effect of decision
+    return relativeReward * 1000;
   }
 }
