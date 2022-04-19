@@ -9,4 +9,4 @@ coverage
 *.log
 yarn.lock
 .DS_Store
-example/.DS_Store
+implementations/.DS_Store
