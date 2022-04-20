@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import path from "path";
 
 import * as tf from '@tensorflow/tfjs';
 
@@ -8,8 +9,11 @@ import {
   ActionKeyToEventName
 } from '../../shared/action-key-event-mapper';
 import {Memory} from '../../shared/memory';
+import {MODEL_VERSION} from "../../shared/constants";
 import {SaveablePolicyNetwork} from '../../shared/policy-network';
-import {ReinforcementLearningModel,} from '../../shared/reinforcement-learning.model';
+import {ReinforcementLearningModel} from '../../shared/reinforcement-learning.model';
+
+import {MODEL_SAVE_PATH} from "./constants";
 
 
 const MIN_EPSILON = 0.5;
@@ -51,9 +55,9 @@ class NodeTensorflow {
   }
 
   private async initialize() {
-    if (await SaveablePolicyNetwork.checkStoredModelStatus()) {
+    if (fs.existsSync(path.resolve('../shared/' + MODEL_VERSION + '/model.json'))) {
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame);
+      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     } else {
       this.createModel();
@@ -65,18 +69,10 @@ class NodeTensorflow {
   };
 
   public async createModel() {
-    const hiddenLayerSizes = this.hiddenLayerSize.trim().split(',').map(v => {
-      const num = Number.parseInt(v.trim());
-      if (!(num > 0)) {
-        throw new Error(
-          `Invalid hidden layer sizes string: ` +
-          `${this.hiddenLayerSize}`);
-      }
-      return num;
-    });
-
+    console.log(`Creating a new model...`);
+    const hiddenLayerSizes = Number.parseInt(this.hiddenLayerSize);
     const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame});
+    this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
   }
 
   public async deleteStoredModel() {
