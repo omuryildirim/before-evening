@@ -37,7 +37,7 @@
 import * as tf from '@tensorflow/tfjs-node';
 
 import {Memory} from "./memory";
-import { ReinforcementLearningModel } from './reinforcement-learning.model';
+import {ReinforcementLearningModel} from './reinforcement-learning.model';
 
 
 /**
@@ -114,16 +114,12 @@ class PolicyNetwork {
   }
 }
 
-// The IndexedDB path where the model of the policy network will be saved.
-const MODEL_VERSION = 'before-evening-v6';
-const MODEL_SAVE_PATH = 'file://./' + MODEL_VERSION;
-
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
  */
-type SaveablePolicyNetworkParams = {hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; browserModel?: boolean; modelName?: string;}
+type SaveablePolicyNetworkParams = { hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; modelName: string; }
+
 export class SaveablePolicyNetwork extends PolicyNetwork {
-  private readonly browserModel: boolean;
   private readonly modelName: string;
 
   /**
@@ -132,20 +128,22 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @param hiddenLayerSizesOrModel
    * @param maxStepsPerGame
    * @param fileModel
-   * @param browserModel
    * @param modelName
    */
-  constructor({hiddenLayerSizesOrModel, maxStepsPerGame, browserModel, modelName}: SaveablePolicyNetworkParams) {
+  constructor({
+                hiddenLayerSizesOrModel,
+                maxStepsPerGame,
+                modelName
+              }: SaveablePolicyNetworkParams) {
     super(hiddenLayerSizesOrModel, maxStepsPerGame);
-    this.browserModel = browserModel;
     this.modelName = modelName
   }
 
   /**
    * Save the model to IndexedDB.
    */
-  async saveModel() {
-    return await this.model.network.save(MODEL_SAVE_PATH);
+  async saveModel(): Promise<any> {
+    return await this.model.network.save(this.modelName);
   }
 
   /**
@@ -155,15 +153,18 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   `SaveablePolicyNetwork`.
    * @throws {Error} If no model can be found in IndexedDB.
    */
-  static async loadModel(maxStepsPerGame: number, modelName?: string, browserModel?: boolean) {
-    const name = modelName || MODEL_SAVE_PATH + '/model.json'
+  static async loadModel(maxStepsPerGame: number, modelName: string, browserModel?: boolean) {
     console.log(`Loading existing model...`);
-    const model = await tf.loadLayersModel(name);
+    const model = await tf.loadLayersModel(browserModel ? modelName : modelName + '/model.json');
     if (model) {
-      console.log(`Loaded model from ${name}`);
-      return new SaveablePolicyNetwork({hiddenLayerSizesOrModel: model, maxStepsPerGame, modelName, browserModel});
+      console.log(`Loaded model from ${modelName}`);
+      return new SaveablePolicyNetwork({
+        hiddenLayerSizesOrModel: model,
+        maxStepsPerGame,
+        modelName
+      });
     } else {
-      throw new Error(`Cannot find model at ${name}.`);
+      throw new Error(`Cannot find model at ${modelName}.`);
     }
   }
 
@@ -173,15 +174,15 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @returns If the locally saved model exists, the model info as a JSON
    *   object. Else, `undefined`.
    */
-  static async checkStoredModelStatus() {
-    return await tf.loadLayersModel(MODEL_SAVE_PATH);
+  static async checkStoredModelStatus(modelName: string) {
+    return await tf.loadLayersModel(modelName);
   }
 
   /**
    * Remove the locally saved model from IndexedDB.
    */
-  async removeModel() {
-    return await tf.io.removeModel(MODEL_SAVE_PATH);
+  async removeModel(): Promise<any> {
+    return await tf.io.removeModel(this.modelName);
   }
 
   /**
