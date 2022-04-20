@@ -5,7 +5,7 @@ import {Memory} from "../../../../shared/memory";
 import {SaveablePolicyNetwork} from "../../../../shared/policy-network";
 import {GameStateService} from "../game-state.service";
 
-
+import {MODEL_SAVE_PATH} from "./helpers/constants";
 import {Orchestrator} from "./helpers/orchestrator";
 
 @Component({
@@ -64,9 +64,9 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   }
 
   private async initializeView() {
-    if (await SaveablePolicyNetwork.checkStoredModelStatus() != null) {
+    if (await SaveablePolicyNetwork.checkStoredModelStatus(MODEL_SAVE_PATH) != null) {
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame);
+      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH, true);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     }
     await this.updateUIControlState();
@@ -85,7 +85,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       });
 
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame});
+      this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
       await this.policyNet.saveModel();
 
       await this.updateUIControlState();
@@ -95,11 +95,9 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   }
 
   private async updateUIControlState() {
-    const modelInfo = await SaveablePolicyNetwork.checkStoredModelStatus();
-    if (modelInfo == null) {
+    if (this.policyNet == null) {
       this.storedModelStatus = 'No stored model.';
       this.disabledStatus.deleteStoredModelButton = true;
-
     } else {
       this.storedModelStatus = `Saved@`;
       this.disabledStatus.deleteStoredModelButton = false;
