@@ -10,7 +10,7 @@ import {
 } from '../../shared/action-key-event-mapper';
 import {MODEL_VERSION} from "../../shared/constants";
 import {Memory} from '../../shared/memory';
-import {SaveableNodePolicyNetwork} from '../../shared/saveable-node-policy.network';
+import {SaveableNodePolicyNetwork} from '../../shared/policy-network.node';
 import {ReinforcementLearningModel} from '../../shared/reinforcement-learning.model';
 
 import {MODEL_SAVE_PATH} from "./constants";
