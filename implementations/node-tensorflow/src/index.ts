@@ -22,32 +22,25 @@ const LAMBDA = 0.01;
 
 class NodeTensorflow {
   private policyNet: SaveableNodePolicyNetwork;
-  public hiddenLayerSize: string;
-  public storedModelStatus: string;
-  public numberOfIterations: string;
-  public gamesPerIteration: string;
-  public maxStepsPerGame: string;
-  public discountRate: string;
-  public iterationStatus: string;
-  public iterationProgress: number;
-  public maxAwardList: number[];
-  public gameStatus: string;
-  public gameProgress: number;
+  private hiddenLayerSize: number;
+  private readonly numberOfIterations: string;
+  private readonly gamesPerIteration: number;
+  private readonly maxStepsPerGame: number;
+  private readonly discountRate: number;
+  private iterationStatus: string;
+  private gameStatus: string;
   private beforeEvening: BeforeEvening;
   private dataset: { state: [number, number, number, number, number, number, number]; action: { key: number; value: string; }; selectedAction: {key: number; value: string; epsilon: number;}; relativeReward: number; reward: number; }[];
   private startTime: Date;
 
   constructor() {
-    this.hiddenLayerSize = '1024';
-    this.storedModelStatus = 'N/A';
+    this.hiddenLayerSize = 1024;
     this.numberOfIterations = '50';
-    this.gamesPerIteration = '100';
-    this.maxStepsPerGame = '1000';
-    this.discountRate = '0.95';
+    this.gamesPerIteration = 100;
+    this.maxStepsPerGame = 1000;
+    this.discountRate = 0.95;
     this.iterationStatus = '';
-    this.iterationProgress = 0;
     this.gameStatus = '';
-    this.gameProgress = 0;
     this.dataset = [];
     this.startTime = new Date();
 
@@ -56,8 +49,7 @@ class NodeTensorflow {
 
   private async initialize() {
     if (fs.existsSync(path.resolve('../shared/' + MODEL_VERSION + '/model.json'))) {
-      const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveableNodePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH);
+      this.policyNet = await SaveableNodePolicyNetwork.loadModel(this.maxStepsPerGame, MODEL_SAVE_PATH);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     } else {
       this.createModel();
@@ -68,72 +60,51 @@ class NodeTensorflow {
     await this.train();
   };
 
-  public async createModel() {
+  private async createModel() {
     console.log(`Creating a new model...`);
-    const hiddenLayerSizes = Number.parseInt(this.hiddenLayerSize);
-    const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    this.policyNet = new SaveableNodePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
+    this.policyNet = new SaveableNodePolicyNetwork({hiddenLayerSizesOrModel: this.hiddenLayerSize, maxStepsPerGame: this.maxStepsPerGame, modelName: MODEL_SAVE_PATH});
   }
 
-  public async deleteStoredModel() {
-    if (confirm(`Are you sure you want to delete the locally-stored model?`)) {
-      await this.policyNet.removeModel();
-      this.policyNet = null;
-    }
-  };
-
-  public async train() {
+  private async train() {
     const trainIterations = Number.parseInt(this.numberOfIterations);
     if (!(trainIterations > 0)) {
       throw new Error(`Invalid number of iterations: ${trainIterations}`);
     }
-    const gamesPerIteration = Number.parseInt(this.gamesPerIteration);
-    if (!(gamesPerIteration > 0)) {
+
+    if (!(this.gamesPerIteration > 0)) {
       throw new Error(
-        `Invalid # of games per iterations: ${gamesPerIteration}`);
-    }
-    const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    if (!(maxStepsPerGame > 1)) {
-      throw new Error(`Invalid max. steps per game: ${maxStepsPerGame}`);
-    }
-    const discountRate = Number.parseFloat(this.discountRate);
-    if (!(discountRate > 0 && discountRate < 1)) {
-      throw new Error(`Invalid discount rate: ${discountRate}`);
+        `Invalid # of games per iterations: ${this.gamesPerIteration}`);
     }
 
-    this.maxAwardList = [];
+    if (!(this.maxStepsPerGame > 1)) {
+      throw new Error(`Invalid max. steps per game: ${this.maxStepsPerGame}`);
+    }
+
+    if (!(this.discountRate > 0 && this.discountRate < 1)) {
+      throw new Error(`Invalid discount rate: ${this.discountRate}`);
+    }
+
     this.onIterationEnd(0, trainIterations);
     for (let iteration = 0; iteration < trainIterations; ++iteration) {
-      const maxAward = await this.trainModelForNumberOfGames(
-        discountRate,
-        gamesPerIteration,
-        maxStepsPerGame
-      );
-      this.maxAwardList.push(maxAward);
-
-      console.log(`Maximum award was ${maxAward}`);
-
+      await this.trainModelForNumberOfGames();
       this.onIterationEnd(iteration + 1, trainIterations);
       await this.policyNet.saveModel();
     }
   }
 
-  private async trainModelForNumberOfGames(discountRate: number, numGames: number, maxStepsPerGame: number) {
-    const maxAward: number[] = [];
-    this.onGameEnd(0, numGames);
-    const memory = new Memory(maxStepsPerGame);
+  private async trainModelForNumberOfGames() {
+    this.onGameEnd(0, this.gamesPerIteration);
+    const memory = new Memory(this.maxStepsPerGame);
 
-    for (let i = 0; i < numGames; ++i) {
+    for (let i = 0; i < this.gamesPerIteration; ++i) {
       // Randomly initialize the state of the system at the beginning
       // of every game.
       this.beforeEvening.resetGame(true);
-      const totalAward = await this.runOneEpisode(discountRate, maxStepsPerGame, memory);
-      maxAward.push(totalAward);
-      this.onGameEnd(i + 1, numGames);
+      await this.runOneEpisode(this.discountRate, this.maxStepsPerGame, memory);
+      this.onGameEnd(i + 1,this.gamesPerIteration);
     }
 
     this.writeLogToFile();
-    return Math.max(...maxAward);
   }
 
   private async runOneEpisode(discountRate: number, maxStepsPerGame: number, memory: Memory): Promise<number> {
@@ -206,15 +177,13 @@ class NodeTensorflow {
 
   private onIterationEnd(iterationCount: number, totalIterations: number) {
     this.iterationStatus = `Iteration ${iterationCount} of ${totalIterations}`;
-    this.iterationProgress = iterationCount / totalIterations * 100;
 
     console.log('\n', '--------------------------------------------------', '\n',
       this.iterationStatus, '\n');
   }
 
-  public onGameEnd(gameCount: number, totalGames: number) {
+  private onGameEnd(gameCount: number, totalGames: number) {
     this.gameStatus = `Game ${gameCount} of ${totalGames}`;
-    this.gameProgress = gameCount / totalGames * 100;
 
     console.log('*********', '\n', this.iterationStatus, '\n', this.gameStatus, '\n');
     console.log(this.getPassedTime())
