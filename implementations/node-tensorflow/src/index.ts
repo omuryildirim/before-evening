@@ -8,9 +8,9 @@ import {
   ActionKeyEventMapper,
   ActionKeyToEventName
 } from '../../shared/action-key-event-mapper';
-import {Memory} from '../../shared/memory';
 import {MODEL_VERSION} from "../../shared/constants";
-import {SaveablePolicyNetwork} from '../../shared/policy-network';
+import {Memory} from '../../shared/memory';
+import {SaveableNodePolicyNetwork} from '../../shared/saveable-node-policy.network';
 import {ReinforcementLearningModel} from '../../shared/reinforcement-learning.model';
 
 import {MODEL_SAVE_PATH} from "./constants";
@@ -21,7 +21,7 @@ const MAX_EPSILON = 0.8;
 const LAMBDA = 0.01;
 
 class NodeTensorflow {
-  private policyNet: SaveablePolicyNetwork;
+  private policyNet: SaveableNodePolicyNetwork;
   public hiddenLayerSize: string;
   public storedModelStatus: string;
   public numberOfIterations: string;
@@ -57,7 +57,7 @@ class NodeTensorflow {
   private async initialize() {
     if (fs.existsSync(path.resolve('../shared/' + MODEL_VERSION + '/model.json'))) {
       const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH);
+      this.policyNet = await SaveableNodePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH);
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     } else {
       this.createModel();
@@ -72,7 +72,7 @@ class NodeTensorflow {
     console.log(`Creating a new model...`);
     const hiddenLayerSizes = Number.parseInt(this.hiddenLayerSize);
     const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-    this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
+    this.policyNet = new SaveableNodePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
   }
 
   public async deleteStoredModel() {

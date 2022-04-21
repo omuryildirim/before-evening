@@ -34,7 +34,7 @@
  *   https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
  */
 
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 
 import {Memory} from "./memory";
 import {ReinforcementLearningModel} from './reinforcement-learning.model';
@@ -114,11 +114,11 @@ class PolicyNetwork {
   }
 }
 
+type SaveablePolicyNetworkParams = { hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; modelName: string; }
+
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
  */
-type SaveablePolicyNetworkParams = { hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; modelName: string; }
-
 export class SaveablePolicyNetwork extends PolicyNetwork {
   private readonly modelName: string;
 
