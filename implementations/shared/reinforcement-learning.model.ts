@@ -2,6 +2,8 @@ import * as tf from '@tensorflow/tfjs';
 
 import {StateUpdate} from "../../src";
 
+import {ACTIVATION, LOSS, OPTIMIZER} from "./constants";
+
 export class ReinforcementLearningModel {
   public numStates: number;
   public numActions: number;
@@ -22,7 +24,7 @@ export class ReinforcementLearningModel {
     if (hiddenLayerSizesOrModel instanceof tf.LayersModel) {
       this.network = hiddenLayerSizesOrModel;
       this.network.summary();
-      this.network.compile({optimizer: 'adam', loss: 'meanSquaredError'});
+      this.network.compile({optimizer: OPTIMIZER, loss: LOSS});
     } else {
       this.defineModel(hiddenLayerSizesOrModel);
     }
@@ -37,7 +39,7 @@ export class ReinforcementLearningModel {
     hiddenLayerSizes.forEach((hiddenLayerSize, i) => {
       (this.network as tf.Sequential).add(tf.layers.dense({
         units: hiddenLayerSize,
-        activation: 'relu',
+        activation: ACTIVATION,
         // `inputShape` is required only for the first layer.
         inputShape: i === 0 ? [this.numStates] : undefined
       }));
@@ -45,7 +47,7 @@ export class ReinforcementLearningModel {
     (this.network as tf.Sequential).add(tf.layers.dense({units: this.numActions}));
 
     this.network.summary();
-    this.network.compile({optimizer: 'adam', loss: 'meanSquaredError'});
+    this.network.compile({optimizer: OPTIMIZER, loss: LOSS});
   }
 
   /**
