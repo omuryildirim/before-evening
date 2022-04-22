@@ -1,7 +1,9 @@
 import {AfterViewInit, Component} from '@angular/core';
-import {GameStateService} from '../game-state.service';
-import {StatsRenderer} from './statsRenderer';
+
 import {BeforeEvening, StateUpdate} from "../../../../../src";
+import {GameStateService} from '../game-state.service';
+
+import {StatsRenderer} from './statsRenderer';
 
 @Component({
   selector: 'car-game',
@@ -11,10 +13,12 @@ import {BeforeEvening, StateUpdate} from "../../../../../src";
 export class CarGameComponent implements AfterViewInit {
   public currentState: StateUpdate;
   public skipRender: boolean;
+  public readonly doNotRenderStats: boolean;
 
   private beforeEvening: BeforeEvening;
 
   constructor(private gameStateService: GameStateService) {
+    this.doNotRenderStats = true;
   }
 
   public toggleSkipRender() {
@@ -26,15 +30,25 @@ export class CarGameComponent implements AfterViewInit {
     this.gameStateService.beforeEvening = this.beforeEvening;
 
     this.gameStateService.associateStateUpdater(this.beforeEvening.stateUpdate);
-    this.beforeEvening.runGame();
+    const width = document.querySelector(".left-side").clientWidth * 0.6;
+    this.beforeEvening.runGame({
+        width: width.toString(),
+        height: (width * 3/4).toString(),
+      });
 
-    const statsContainer = new StatsRenderer(this.beforeEvening.stats);
+    let statsContainer: StatsRenderer;
+    if (!this.doNotRenderStats) {
+      statsContainer = new StatsRenderer(this.beforeEvening.stats);
+    }
 
     this.beforeEvening.stateUpdate.subscribe(state => {
       this.currentState = state;
-      statsContainer.updateStats(this.beforeEvening.stats.ms, this.beforeEvening.stats.msMin,
-        this.beforeEvening.stats.msMax, this.beforeEvening.stats.fps,
-        this.beforeEvening.stats.fpsMin, this.beforeEvening.stats.fpsMax);
+
+      if (!this.doNotRenderStats && statsContainer) {
+        statsContainer.updateStats(this.beforeEvening.stats.ms, this.beforeEvening.stats.msMin,
+          this.beforeEvening.stats.msMax, this.beforeEvening.stats.fps,
+          this.beforeEvening.stats.fpsMin, this.beforeEvening.stats.fpsMax);
+      }
     });
 
     this.gameStateService.refreshGame.subscribe(() => {

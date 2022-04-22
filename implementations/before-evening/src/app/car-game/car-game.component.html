@@ -1,4 +1,4 @@
-<table id="controls">
+<table *ngIf="!doNotRenderStats" id="controls">
   <tr>
     <td id="fps" colspan="2" align="right"></td>
   </tr>
@@ -46,10 +46,6 @@
   </tr>
 </table>
 
-<div id='instructions'>
-  <p>Use the <b>arrow keys</b> to drive the car.</p>
-</div>
-
 <div id="racer">
   <div id="hud">
     <span id="speed" class="hud"><span id="speed_value" class="value">0</span> mph</span>
@@ -60,7 +56,6 @@
   <canvas id="canvas">
     Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
   </canvas>
-  Loading...
 </div>
 
 <audio id='music'>
@@ -69,7 +64,7 @@
 </audio>
 <span id="mute"></span>
 
-<div *ngIf="currentState && !skipRender"
+<div *ngIf="currentState && !skipRender && !doNotRenderStats"
      class="current-state">
   <div>
     {{ currentState.playerX }}
@@ -80,10 +75,4 @@
   <div>
     {{ currentState.speed }}
   </div>
-</div>
-
-<div class="input-div">
-  <label class="input-label">Stop render:</label>
-  <input type="checkbox" [(ngModel)]="skipRender" (ngModelChange)="toggleSkipRender()"/>
-  <div class="note">Check me to speed up training.</div>
 </div>

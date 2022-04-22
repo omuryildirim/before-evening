@@ -17,7 +17,6 @@ export class BeforeEvening {
   private readonly renderService: Render;
   public stateUpdate: Subject<StateUpdate>;
   public stats: Stats;
-  public disableInputKeys: boolean;
 
   constructor(type?: 'straight') {
     this.state = new StateService();
@@ -53,9 +52,9 @@ export class BeforeEvening {
       this.roadHelper.resetRoad(); // only rebuild road when necessary
   }
 
-  public runGame() {
+  public runGame(options?: Record<string, string>) {
     Game.loadImages(["background", "sprites"], (images) => {
-      this.ready(images); // tell caller to initialize itself because images are loaded and we're ready to rumble
+      this.ready(images, options); // tell caller to initialize itself because images are loaded and we're ready to rumble
       this.setKeyListener();
       this.calculateNextFrame(); // lets get this party started
       Game.playMusic();
@@ -100,10 +99,10 @@ export class BeforeEvening {
     };
   }
 
-  private ready(images) {
+  private ready(images: CanvasImageSource[], options: Record<string, string>) {
     this.state.background = images[0];
     this.state.sprites = images[1];
-    this.reset();
+    this.reset(options);
   }
 
   private setKeyListener() {
@@ -116,10 +115,6 @@ export class BeforeEvening {
   }
 
   public changeDirectionAccordingToKey(keyCode: number, mode: 'down' | 'up') {
-    if (this.disableInputKeys) {
-      return;
-    }
-
     switch (keyCode) {
       case KEY.LEFT:
       case KEY.A:
