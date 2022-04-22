@@ -34,11 +34,11 @@
  *   https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
  */
 
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 
-import { ReinforcementLearningModel } from './reinforcement-learning.model';
-import * as fs from 'fs';
-import path from 'path';
+import {Memory} from "./memory";
+import {ReinforcementLearningModel} from './reinforcement-learning.model';
+
 
 /**
  * Policy network for controlling the cart-pole system.
@@ -66,31 +66,84 @@ class PolicyNetwork {
   constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
     this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame)
   }
+
+  public async educateTheNet(memory: Memory, discountRate: number) {
+    // Sample from memory
+    const batch = memory.sample(this.model.batchSize);
+    const states = batch.map(([state, ,]) => state);
+    const nextStates = batch.map(
+      ([, , , nextState]) => nextState ? nextState : tf.zeros([this.model.numStates])
+    );
+
+    // Predict the values of each action at each state
+    const qsa = states.map((state) => this.model.predictNextActionQ(state));
+    // Predict the values of each action at each next state
+    const qsad = nextStates.map((nextState) => this.model.predictNextActionQ(nextState));
+
+    let x: any = [];
+    let y: any = [];
+
+    // Update the states rewards with the discounted next states rewards
+    batch.forEach(
+      ([state, action, reward, nextState], index) => {
+        if (qsa[index]) {
+          const currentQ = qsa[index].dataSync();
+          currentQ[action] = nextState ? reward + discountRate * qsad[index].max().dataSync() : reward;
+          x.push(state.dataSync());
+          y.push(currentQ);
+        } else {
+          qsa.splice(index, 1);
+          qsad.splice(index, 1);
+        }
+      }
+    );
+
+    // Clean unused tensors
+    qsa.forEach((state) => state.dispose());
+    qsad.forEach((state) => state.dispose());
+
+    // Reshape the batches to be fed to the network
+    x = tf.tensor2d(x, [x.length, this.model.numStates]);
+    y = tf.tensor2d(y, [y.length, this.model.numActions]);
+
+    // Learn the Q(s, a) values given associated discounted rewards
+    await this.model.train(x, y);
+
+    x.dispose();
+    y.dispose();
+  }
 }
 
-// The IndexedDB path where the model of the policy network will be saved.
-const MODEL_VERSION = 'before-evening-v6';
-const MODEL_SAVE_PATH_ = 'file://./' + MODEL_VERSION;
+type SaveablePolicyNetworkParams = { hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; modelName: string; }
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
  */
 export class SaveablePolicyNetwork extends PolicyNetwork {
+  private readonly modelName: string;
+
   /**
    * Constructor of SaveablePolicyNetwork
    *
-   * @param {number | number[]} hiddenLayerSizesOrModel
+   * @param hiddenLayerSizesOrModel
    * @param maxStepsPerGame
+   * @param fileModel
+   * @param modelName
    */
-  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
+  constructor({
+                hiddenLayerSizesOrModel,
+                maxStepsPerGame,
+                modelName
+              }: SaveablePolicyNetworkParams) {
     super(hiddenLayerSizesOrModel, maxStepsPerGame);
+    this.modelName = modelName
   }
 
   /**
    * Save the model to IndexedDB.
    */
-  async saveModel() {
-    return await this.model.network.save(MODEL_SAVE_PATH_);
+  async saveModel(): Promise<any> {
+    return await this.model.network.save(this.modelName);
   }
 
   /**
@@ -100,15 +153,18 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   `SaveablePolicyNetwork`.
    * @throws {Error} If no model can be found in IndexedDB.
    */
-  static async loadModel(maxStepsPerGame: number) {
-    const handler = tf.io.fileSystem('./' + MODEL_VERSION);
-    if (handler) {
-      console.log(`Loading existing model...`);
-      const model = await tf.loadLayersModel(MODEL_SAVE_PATH_ + '/model.json');
-      console.log(`Loaded model from ${MODEL_SAVE_PATH_}`);
-      return new SaveablePolicyNetwork(model, maxStepsPerGame);
+  static async loadModel(maxStepsPerGame: number, modelName: string, browserModel?: boolean) {
+    console.log(`Loading existing model...`);
+    const model = await tf.loadLayersModel(browserModel ? modelName : modelName + '/model.json');
+    if (model) {
+      console.log(`Loaded model from ${modelName}`);
+      return new SaveablePolicyNetwork({
+        hiddenLayerSizesOrModel: model,
+        maxStepsPerGame,
+        modelName
+      });
     } else {
-      throw new Error(`Cannot find model at ${MODEL_SAVE_PATH_}.`);
+      throw new Error(`Cannot find model at ${modelName}.`);
     }
   }
 
@@ -118,15 +174,15 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @returns If the locally saved model exists, the model info as a JSON
    *   object. Else, `undefined`.
    */
-  static async checkStoredModelStatus() {
-    return fs.existsSync(path.resolve('./' + MODEL_VERSION + '/model.json'));
+  static async checkStoredModelStatus(modelName: string) {
+    return await tf.loadLayersModel(modelName);
   }
 
   /**
    * Remove the locally saved model from IndexedDB.
    */
-  async removeModel() {
-    return await tf.io.removeModel(MODEL_SAVE_PATH_);
+  async removeModel(): Promise<any> {
+    return await tf.io.removeModel(this.modelName);
   }
 
   /**
@@ -136,7 +192,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   return the size of the layer as a single number. If the model has
    *   multiple hidden layers, return the sizes as an Array of numbers.
    */
-  hiddenLayerSizes() {
+  public hiddenLayerSizes() {
     const sizes = [];
     for (let i = 0; i < this.model.network.layers.length - 1; ++i) {
       sizes.push((<any>this.model.network.layers[i]).units);

@@ -3,7 +3,7 @@
     "incremental": true,
     "target": "es5",
     "outDir": "build",
-    "rootDirs": ["src", "../../src"],
+    "rootDirs": ["src", "../../src", "../shared"],
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,

@@ -26,7 +26,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/images"
+              "src/images",
+              {"glob": "**/*", "input": "../shared", "output": "./assets"}
             ],
             "styles": [
               "src/styles.scss"
@@ -91,7 +92,8 @@
             "karmaConfig": "karma.conf.js",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {"glob": "**/before*/*", "input": "../../shared", "output": "./models"}
             ],
             "styles": [
               "src/styles.scss"

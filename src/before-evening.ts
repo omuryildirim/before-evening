@@ -17,6 +17,7 @@ export class BeforeEvening {
   private readonly renderService: Render;
   public stateUpdate: Subject<StateUpdate>;
   public stats: Stats;
+  public disableInputKeys: boolean;
 
   constructor(type?: 'straight') {
     this.state = new StateService();
@@ -115,6 +116,10 @@ export class BeforeEvening {
   }
 
   public changeDirectionAccordingToKey(keyCode: number, mode: 'down' | 'up') {
+    if (this.disableInputKeys) {
+      return;
+    }
+
     switch (keyCode) {
       case KEY.LEFT:
       case KEY.A:

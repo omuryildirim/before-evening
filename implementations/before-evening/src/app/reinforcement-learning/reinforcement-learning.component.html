@@ -1,13 +1,19 @@
 <div class="tfjs-example-container centered-container">
   <section class='title-area'>
     <h1>TensorFlow.js: Reinforcement Learning</h1>
-    <p class='subtitle'>Train a model to make a car climb a hill using reinforcement learning.</p>
+    <p class='subtitle'>Train a model to make a car drive autonomously using reinforcement learning.</p>
   </section>
 
   <section>
     <p class='section-head'>Instructions</p>
     <p></p>
     <ul>
+      <li>
+        We have already trained a model for over 6 million iterations. You can't train this model more.
+        Instead you can test this model and see how great it is!
+
+        But you can also create a model that would be stored in your browser's localstorage. To do this:
+      </li>
       <li>
         Choose a hidden layer size and click "Create Model".
       </li>
@@ -16,23 +22,36 @@
       </li>
       <li>
         Note that while the model is training it periodically saves a copy of itself
-        to local browser storage, this mean you can refresh the page and continue training
+        to localstorage, this mean you can refresh the page and continue training
         from the last save point. If at any point you want to start training from scratch, click
         "Delete stored Model".
       </li>
       <li>
-        Once the model has finished training you can click "Test" to see how many 'steps' the agent
-        can balance the pole for. You can also click 'Stop' to pause the training after the current iteration
+        Once the model has finished training you can click "Test" to see if your model can drive
+        autonomously. You can also click 'Stop' to pause the training after the current iteration
         ends if you want to test the model sooner.
       </li>
-      <li>During training and testing a small simulation of the agent behaviour will be rendered.</li>
+      <li>
+        You can watch the training. But this may take long due to fact that agent needs to be trained for
+        couple of hundred thousand steps to learn basics of driving. Therefore, you can also select to train without
+        rendering the training.
+
+        We already set the recommended parameters for training. But you can play around and see
+        the effects of parameters.
+      </li>
     </ul>
   </section>
 
   <section>
-    <p class='section-head'>Status</p>
-    <div>
-      <span id="app-status">Standing by.</span>
+    <div *ngIf="modelNames.length > 1">
+      <p class='section-head'>Selected model</p>
+      <div>
+        <select [(ngModel)]="modelSavePath">
+          <option *ngFor="let model of modelNames" [value]="model.key">
+            {{model.value}}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div>
@@ -42,14 +61,15 @@
           <div class="input-div with-rows">
             <label class="input-label">Hidden layer size(s) (e.g.: "256", "32,64"):</label>
             <input [(ngModel)]="hiddenLayerSize"
-                   [disabled]="disabledStatus.hiddenLayerSizesInput"/>
+                   [disabled]="disabledStatus.hiddenLayerSizesInput"
+                   type="number"/>
           </div>
           <button (click)="createModel()"
                   [disabled]="disabledStatus.createModelButton">Create model</button>
         </div>
         <div class="with-rows init-model">
           <div class="input-div with-rows">
-            <label class="input-label">Locally-stored model</label>
+            <label class="input-label">Model</label>
             <input [(ngModel)]="storedModelStatus" disabled="true" readonly="true"/>
           </div>
           <button (click)="deleteStoredModel()"
@@ -67,19 +87,19 @@
         </div>
         <div class="input-div">
           <label class="input-label">Games per iteration:</label>
-          <input [(ngModel)]="gamesPerIteration"/>
+          <input [(ngModel)]="gamesPerIteration" type="number"/>
         </div>
         <div class="input-div">
           <label class="input-label">Max. steps per game:</label>
-          <input [(ngModel)]="maxStepsPerGame"/>
+          <input [(ngModel)]="maxStepsPerGame" type="number"/>
         </div>
         <div class="input-div">
           <label class="input-label">Reward discount rate:</label>
-          <input [(ngModel)]="discountRate"/>
+          <input [(ngModel)]="discountRate" type="number"/>
         </div>
         <div class="input-div">
           <label class="input-label">Render during training:</label>
-          <input type="checkbox" id="render-during-training"/>
+          <input type="checkbox" [(ngModel)]="renderDuringTraining"/>
           <span class="note">Uncheck me to speed up training.</span>
         </div>
 
@@ -109,11 +129,6 @@
       <div class="status">
         <label id="iteration-status">Game #: {{gameStatus}}</label>
         <progress [value]="gameProgress" max="100"></progress>
-      </div>
-
-      <div class="status">
-        <label>Best position:</label>
-        <span class="status-span">{{ bestPositionText }}</span>
       </div>
       <div #stepsContainer></div>
     </div>
