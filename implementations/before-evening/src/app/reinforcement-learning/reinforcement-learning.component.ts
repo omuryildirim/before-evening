@@ -41,8 +41,6 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   private stopRequested: boolean;
   public iterationStatus: string;
   public iterationProgress: number;
-  public maxPositionValues: { x: number; y: number; }[];
-  public bestPositionText: string;
   public gameStatus: string;
   public gameProgress: number;
   public renderDuringTraining: boolean;
@@ -166,14 +164,13 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
         throw new Error(`Invalid discount rate: ${this.discountRate}`);
       }
 
-      this.maxPositionValues = [];
       this.onIterationEnd(0, trainIterations);
       this.stopRequested = false;
+      this.gameStateService.beforeEvening.disableInputKeys = true;
+
       for (let i = 0; i < trainIterations; ++i) {
         if (this.renderDuringTraining) {
-          const maxPosition = await this.trainV2();
-          this.maxPositionValues.push({x: i + 1, y: maxPosition});
-          this.bestPositionText = `Best position was ${maxPosition}`;
+          await this.trainV2();
         } else {
           await trainModelForNumberOfGames({
             maxEpsilon: this.maxEpsilon,
@@ -192,6 +189,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
         await this.updateUIControlState();
       }
 
+      this.gameStateService.beforeEvening.disableInputKeys = false;
       this.enableModelControls();
     }
   }
@@ -200,8 +198,10 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     this.testState = !this.testState;
 
     if(this.testState) {
+      this.gameStateService.beforeEvening.disableInputKeys = true;
       this.testV2();
     } else {
+      this.gameStateService.beforeEvening.disableInputKeys = false;
       this.gameStateService.stopTest.next(true);
     }
   }
@@ -239,7 +239,6 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
    *   in this round of training.
    */
   private async trainV2() {
-    const maxPositionStore: number[] = [];
     this.onGameEnd(0, this.gamesPerIteration);
     let memory = new Memory(this.maxStepsPerGame);
     for (let i = 0; i < this.gamesPerIteration; ++i) {
@@ -257,11 +256,9 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
         this.lambda
       );
       await orchestrator.run();
-      maxPositionStore.push(orchestrator.maxPositionStore[orchestrator.maxPositionStore.length - 1]);
       this.onGameEnd(i + 1, this.gamesPerIteration);
       memory = new Memory(this.maxStepsPerGame);
     }
-    return Math.max(...maxPositionStore);
   }
 
   private testV2() {
