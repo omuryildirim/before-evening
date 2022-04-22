@@ -8,14 +8,13 @@ import {ReinforcementLearningModel} from '../../../../../shared/reinforcement-le
 import {GameStateService} from "../../game-state.service";
 import {ActionMap} from "../reinforcement-learning.types";
 
-const MIN_EPSILON = 0.01;
-const MAX_EPSILON = 0.2;
-const LAMBDA = 0.01;
-
 export class Orchestrator {
   private policyNetwork: SaveablePolicyNetwork;
   private memory: Memory;
   private eps: number;
+  private minEpsilon: number;
+  private maxEpsilon: number;
+  private lambda: number;
   private steps: number;
   private readonly maxStepsPerGame: number;
   private readonly discountRate: number;
@@ -31,17 +30,23 @@ export class Orchestrator {
    * @param {Memory} memory
    * @param {number} discountRate
    * @param {number} maxStepsPerGame
-   * @param gameStateService
+   * @param {number} gameStateService
+   * @param {number} maxEpsilon
+   * @param {number} minEpsilon
+   * @param lambda
    */
   constructor(policyNetwork: SaveablePolicyNetwork, memory: Memory, discountRate: number, maxStepsPerGame: number,
-              gameStateService: GameStateService) {
+              gameStateService: GameStateService, maxEpsilon: number, minEpsilon: number, lambda: number) {
     this.gameStateService = gameStateService;
     // The main components of the environment
     this.policyNetwork = policyNetwork;
     this.memory = memory;
 
     // The exploration parameter
-    this.eps = MAX_EPSILON;
+    this.eps = maxEpsilon;
+    this.minEpsilon = minEpsilon;
+    this.maxEpsilon = maxEpsilon;
+    this.lambda = lambda;
 
     // Keep tracking of the elapsed steps
     this.steps = 0;
@@ -70,7 +75,7 @@ export class Orchestrator {
 
           this.steps += 1;
           // Exponentially decay the exploration parameter
-          this.eps = MIN_EPSILON + (MAX_EPSILON - MIN_EPSILON) * Math.exp(-LAMBDA * this.steps);
+          this.eps = this.minEpsilon + (this.maxEpsilon - this.minEpsilon) * Math.exp(-this.lambda * this.steps);
 
           state = nextState;
           totalReward += reward;

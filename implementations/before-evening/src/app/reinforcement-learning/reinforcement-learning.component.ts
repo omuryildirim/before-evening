@@ -3,9 +3,15 @@ import * as tf from "@tensorflow/tfjs";
 
 import {Memory} from "../../../../shared/memory";
 import {SaveablePolicyNetwork} from "../../../../shared/policy-network";
+import {trainModelForNumberOfGames} from "../../../../shared/trainer";
 import {GameStateService} from "../game-state.service";
 
-import {MODEL_SAVE_PATH} from "./helpers/constants";
+import {
+  LOCAL_STORAGE_MODEL_PATH,
+  localStorageModelName,
+  MODEL_SAVE_PATH,
+  preTrainedModelName
+} from "./helpers/constants";
 import {Orchestrator} from "./helpers/orchestrator";
 
 @Component({
@@ -15,7 +21,14 @@ import {Orchestrator} from "./helpers/orchestrator";
 })
 export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   private policyNet: SaveablePolicyNetwork;
-  public hiddenLayerSize: string;
+  public hiddenLayerSize: number;
+  public maxStepsPerGame: number;
+  public gamesPerIteration: number;
+  public discountRate: number;
+  public numberOfIterations: string;
+  public minEpsilon: number;
+  public maxEpsilon: number;
+  public lambda: number;
   public storedModelStatus: string;
   public disabledStatus = {
     deleteStoredModelButton: true,
@@ -26,17 +39,17 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   };
   public trainButtonText: string;
   private stopRequested: boolean;
-  public numberOfIterations: string;
-  public gamesPerIteration: string;
-  public maxStepsPerGame: string;
-  public discountRate: string;
   public iterationStatus: string;
   public iterationProgress: number;
   public maxPositionValues: { x: number; y: number; }[];
   public bestPositionText: string;
   public gameStatus: string;
   public gameProgress: number;
+  public renderDuringTraining: boolean;
+  public modelNames: { key: string; value: string; }[];
   private testState: boolean;
+  private localStorageModel: boolean;
+  private _modelSavePath: string;
 
   /**
    * Initializer.
@@ -46,17 +59,23 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.hiddenLayerSize = "128";
+    this.hiddenLayerSize = 1024;
     this.storedModelStatus = "N/A";
-    this.numberOfIterations = "20";
-    this.gamesPerIteration = "20";
-    this.maxStepsPerGame = "3000";
-    this.discountRate = "0.95";
+    this.numberOfIterations = "50";
+    this.gamesPerIteration = 100;
+    this.maxStepsPerGame = 3000;
+    this.discountRate = 0.95;
+    this.minEpsilon = 0.5;
+    this.maxEpsilon = 0.8;
+    this.lambda = 0.01;
     this.trainButtonText = 'Train';
     this.iterationStatus = "";
     this.iterationProgress = 0;
     this.gameStatus = "";
     this.gameProgress = 0;
+    this.localStorageModel = false;
+    this.renderDuringTraining = true;
+    this.modelNames = [{key: MODEL_SAVE_PATH, value: preTrainedModelName}];
   }
 
   ngAfterViewInit() {
@@ -64,31 +83,38 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   }
 
   private async initializeView() {
-    if (await SaveablePolicyNetwork.checkStoredModelStatus(MODEL_SAVE_PATH) != null) {
-      const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = await SaveablePolicyNetwork.loadModel(maxStepsPerGame, MODEL_SAVE_PATH, true);
-      this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
+    const localStorageModelExists = await SaveablePolicyNetwork.checkStoredModelStatus(LOCAL_STORAGE_MODEL_PATH);
+    if (localStorageModelExists) {
+      this.modelNames.push({key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName});
+      this.localStorageModel = true;
     }
-    await this.updateUIControlState();
+
+    this.modelSavePath = localStorageModelExists ? LOCAL_STORAGE_MODEL_PATH : MODEL_SAVE_PATH;
   };
+
+  get modelSavePath() {
+    return this._modelSavePath;
+  }
+
+  set modelSavePath(name) {
+    this._modelSavePath = name;
+    this.loadModel().then();
+  }
+
+  private async loadModel() {
+    this.policyNet = await SaveablePolicyNetwork.loadModel(this.maxStepsPerGame, this.modelSavePath, true);
+    this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
+    await this.updateUIControlState();
+  }
 
   public async createModel() {
     try {
-      const hiddenLayerSizes: any = this.hiddenLayerSize.trim().split(',').map(v => {
-        const num = Number.parseInt(v.trim());
-        if (!(num > 0)) {
-          throw new Error(
-            `Invalid hidden layer sizes string: ` +
-            `${this.hiddenLayerSize}`);
-        }
-        return num;
-      });
-
-      const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: hiddenLayerSizes, maxStepsPerGame, modelName: MODEL_SAVE_PATH});
+      this._modelSavePath = LOCAL_STORAGE_MODEL_PATH;
+      this.policyNet = new SaveablePolicyNetwork({hiddenLayerSizesOrModel: this.hiddenLayerSize, maxStepsPerGame: this.maxStepsPerGame, modelName: this.modelSavePath});
       await this.policyNet.saveModel();
 
       await this.updateUIControlState();
+      this.modelNames.push({key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName});
     } catch (err) {
       // logStatus(`ERROR: ${err.message}`);
     }
@@ -99,13 +125,13 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       this.storedModelStatus = 'No stored model.';
       this.disabledStatus.deleteStoredModelButton = true;
     } else {
-      this.storedModelStatus = `Saved@`;
-      this.disabledStatus.deleteStoredModelButton = false;
-      this.disabledStatus.createModelButton = true;
+      this.localStorageModel = this.modelSavePath !== MODEL_SAVE_PATH
+      this.storedModelStatus = this.localStorageModel ? localStorageModelName: preTrainedModelName;
+      this.disabledStatus.deleteStoredModelButton = !this.localStorageModel;
     }
-    this.disabledStatus.createModelButton = this.policyNet != null;
+    this.disabledStatus.createModelButton = this.localStorageModel;
     this.disabledStatus.hiddenLayerSizesInput = this.policyNet != null;
-    this.disabledStatus.trainButton = this.policyNet == null;
+    this.disabledStatus.trainButton = this.policyNet == null || !this.localStorageModel;
     this.disabledStatus.testButton = this.policyNet == null;
   }
 
@@ -113,6 +139,8 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     if (confirm(`Are you sure you want to delete the locally-stored model?`)) {
       await this.policyNet.removeModel();
       this.policyNet = null;
+      this.modelNames.pop();
+      this.modelSavePath = MODEL_SAVE_PATH;
       await this.updateUIControlState();
     }
   };
@@ -127,27 +155,37 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       if (!(trainIterations > 0)) {
         throw new Error(`Invalid number of iterations: ${trainIterations}`);
       }
-      const gamesPerIteration = Number.parseInt(this.gamesPerIteration);
-      if (!(gamesPerIteration > 0)) {
+      if (!(this.gamesPerIteration > 0)) {
         throw new Error(
-          `Invalid # of games per iterations: ${gamesPerIteration}`);
+          `Invalid # of games per iterations: ${this.gamesPerIteration}`);
       }
-      const maxStepsPerGame = Number.parseInt(this.maxStepsPerGame);
-      if (!(maxStepsPerGame > 1)) {
-        throw new Error(`Invalid max. steps per game: ${maxStepsPerGame}`);
+      if (!(this.maxStepsPerGame > 1)) {
+        throw new Error(`Invalid max. steps per game: ${this.maxStepsPerGame}`);
       }
-      const discountRate = Number.parseFloat(this.discountRate);
-      if (!(discountRate > 0 && discountRate < 1)) {
-        throw new Error(`Invalid discount rate: ${discountRate}`);
+      if (!(this.discountRate > 0 && this.discountRate < 1)) {
+        throw new Error(`Invalid discount rate: ${this.discountRate}`);
       }
 
       this.maxPositionValues = [];
       this.onIterationEnd(0, trainIterations);
       this.stopRequested = false;
       for (let i = 0; i < trainIterations; ++i) {
-        const maxPosition = await this.trainV2();
-        this.maxPositionValues.push({x: i + 1, y: maxPosition});
-        this.bestPositionText = `Best position was ${maxPosition}`;
+        if (this.renderDuringTraining) {
+          const maxPosition = await this.trainV2();
+          this.maxPositionValues.push({x: i + 1, y: maxPosition});
+          this.bestPositionText = `Best position was ${maxPosition}`;
+        } else {
+          await trainModelForNumberOfGames({
+            maxEpsilon: this.maxEpsilon,
+            minEpsilon: this.minEpsilon,
+            discountRate: this.discountRate,
+            gamesPerIteration: this.gamesPerIteration,
+            maxStepsPerGame: this.maxStepsPerGame,
+            beforeEvening: this.gameStateService.beforeEvening,
+            policyNet: this.policyNet,
+            onGameEnd: this.onGameEnd.bind(this),
+          });
+        }
         this.onIterationEnd(i + 1, trainIterations);
         await tf.nextFrame();  // Unblock UI thread.
         await this.policyNet.saveModel();
@@ -202,48 +240,42 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
    */
   private async trainV2() {
     const maxPositionStore: number[] = [];
-    this.onGameEnd(0, this.parsedGamesPerIteration);
-    let memory = new Memory(this.parsedMaxStepsPerGame);
-    for (let i = 0; i < this.parsedGamesPerIteration; ++i) {
+    this.onGameEnd(0, this.gamesPerIteration);
+    let memory = new Memory(this.maxStepsPerGame);
+    for (let i = 0; i < this.gamesPerIteration; ++i) {
       // Randomly initialize the state of the cart-pole system at the beginning
       // of every game.
       this.gameStateService.refreshGame.next();
       const orchestrator = new Orchestrator(
         this.policyNet,
         memory,
-        this.parsedDiscountRate,
-        this.parsedMaxStepsPerGame,
-        this.gameStateService
+        this.discountRate,
+        this.maxStepsPerGame,
+        this.gameStateService,
+        this.maxEpsilon,
+        this.minEpsilon,
+        this.lambda
       );
       await orchestrator.run();
       maxPositionStore.push(orchestrator.maxPositionStore[orchestrator.maxPositionStore.length - 1]);
-      this.onGameEnd(i + 1, this.parsedGamesPerIteration);
-      memory = new Memory(this.parsedMaxStepsPerGame);
+      this.onGameEnd(i + 1, this.gamesPerIteration);
+      memory = new Memory(this.maxStepsPerGame);
     }
     return Math.max(...maxPositionStore);
   }
 
   private testV2() {
-    const memory = new Memory(this.parsedMaxStepsPerGame);
+    const memory = new Memory(this.maxStepsPerGame);
     const orchestrator = new Orchestrator(
       this.policyNet,
       memory,
       0,
       0,
-      this.gameStateService
+      this.gameStateService,
+      this.maxEpsilon,
+      this.minEpsilon,
+      this.lambda
     );
     orchestrator.test();
-  }
-
-  get parsedMaxStepsPerGame() {
-    return parseInt(this.maxStepsPerGame);
-  }
-
-  get parsedGamesPerIteration() {
-    return parseInt(this.gamesPerIteration);
-  }
-
-  get parsedDiscountRate() {
-    return parseInt(this.discountRate);
   }
 }
