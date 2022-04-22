@@ -30,30 +30,22 @@
 #racer {
   position: relative;
   z-index: 0;
-  width: 640px;
-  height: 480px;
-  margin-left: 20em;
-  border: 2px solid black;
+  border-top: 2px solid black;
 }
 
 #canvas {
-  position: absolute;
-  z-index: 0;
-  width: 640px;
-  height: 480px;
   z-index: 0;
   background-color: #72D7EE;
 }
 
 #mute {
-  background-position: 0px 0px;
+  background-position: 0;
   width: 32px;
   height: 32px;
   background: url("../../images/mute.png");
   display: inline-block;
   cursor: pointer;
   position: absolute;
-  margin-left: 20em;
 }
 
 #mute.on {
@@ -67,7 +59,7 @@
 #hud {
   position: absolute;
   z-index: 1;
-  width: 640px;
+  width: 100%;
   padding: 5px 0;
   font-family: Verdana, Geneva, sans-serif;
   font-size: 0.8em;

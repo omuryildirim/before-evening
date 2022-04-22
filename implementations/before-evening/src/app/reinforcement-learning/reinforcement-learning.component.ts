@@ -166,7 +166,6 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
 
       this.onIterationEnd(0, trainIterations);
       this.stopRequested = false;
-      this.gameStateService.beforeEvening.disableInputKeys = true;
 
       for (let i = 0; i < trainIterations; ++i) {
         if (this.renderDuringTraining) {
@@ -189,7 +188,6 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
         await this.updateUIControlState();
       }
 
-      this.gameStateService.beforeEvening.disableInputKeys = false;
       this.enableModelControls();
     }
   }
@@ -198,10 +196,8 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     this.testState = !this.testState;
 
     if(this.testState) {
-      this.gameStateService.beforeEvening.disableInputKeys = true;
       this.testV2();
     } else {
-      this.gameStateService.beforeEvening.disableInputKeys = false;
       this.gameStateService.stopTest.next(true);
     }
   }
