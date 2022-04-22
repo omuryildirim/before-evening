@@ -26,7 +26,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/images"
+              "src/images",
+              {"glob": "**/*", "input": "../shared", "output": "./assets"}
             ],
             "styles": [
               "src/styles.scss"
@@ -92,7 +93,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "../shared/before*"
+              {"glob": "**/before*/*", "input": "../../shared", "output": "./models"}
             ],
             "styles": [
               "src/styles.scss"
