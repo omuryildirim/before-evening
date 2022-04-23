@@ -17,19 +17,10 @@
   },
   "dependencies": {
     "@tensorflow/tfjs": "^2.4.0",
-    "@tensorflow/tfjs-node": "^2.4.0",
-    "rx-subject": "^3.1.0",
-    "rxjs": "^6.6.3",
-    "tfjs-node-save": "0.0.2"
+    "@tensorflow/tfjs-node": "^2.4.0"
   },
   "devDependencies": {
     "@types/node": "^14.11.10",
-    "eslint": "^7.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-functional": "^3.0.2",
-    "eslint-plugin-import": "^2.22.0",
-    "prettier": "^2.1.1",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.2"
   },
