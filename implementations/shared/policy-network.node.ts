@@ -1,5 +1,6 @@
-import * as tf from "@tensorflow/tfjs-node";
-import {SaveablePolicyNetwork} from "./policy-network";
+import * as tf from '@tensorflow/tfjs-node';
+
+import { SaveablePolicyNetwork } from './policy-network';
 
 export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
   /**
@@ -17,7 +18,7 @@ export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
       return new SaveablePolicyNetwork({
         hiddenLayerSizesOrModel: model,
         maxStepsPerGame,
-        modelName
+        modelName,
       });
     } else {
       throw new Error(`Cannot find model at ${modelName}.`);

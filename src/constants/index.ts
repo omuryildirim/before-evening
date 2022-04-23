@@ -1,1 +1,1 @@
-export {KEY} from "./keys.constant";
+export { KEY } from './keys.constant';

@@ -1,7 +1,9 @@
-import {Injectable} from "@angular/core";
-import {Subject} from "rxjs";
-import {ActionList} from "./reinforcement-learning/reinforcement-learning.types";
-import {BeforeEvening, KEY, StateUpdate} from "../../../../src";
+import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
+
+import { BeforeEvening, KEY, StateUpdate } from '../../../../src';
+
+import { ActionList } from './reinforcement-learning/reinforcement-learning.types';
 
 @Injectable()
 export class GameStateService {
@@ -21,43 +23,47 @@ export class GameStateService {
   }
 
   public dispatchAnAction(action: ActionList) {
-    let keyList: number[] = [];
+    const keyList: number[] = [];
 
     switch (action) {
-      case "left":
+      case 'left':
         keyList.push(KEY.LEFT);
         break;
-      case "up":
+      case 'up':
         keyList.push(KEY.UP);
         break;
-      case "right":
+      case 'right':
         keyList.push(KEY.RIGHT);
         break;
-      case "down":
+      case 'down':
         keyList.push(KEY.DOWN);
         break;
-      case "left-up":
+      case 'left-up':
         keyList.push(KEY.LEFT, KEY.UP);
         break;
-      case "right-up":
+      case 'right-up':
         keyList.push(KEY.RIGHT, KEY.UP);
         break;
-      case "right-down":
+      case 'right-down':
         keyList.push(KEY.RIGHT, KEY.DOWN);
         break;
-      case "left-down":
+      case 'left-down':
         keyList.push(KEY.LEFT, KEY.DOWN);
         break;
     }
 
     if (this.previousActions) {
       for (const key of this.previousActions) {
-        document.dispatchEvent(new KeyboardEvent('keyup', {'keyCode': key} as any));
+        document.dispatchEvent(
+          new KeyboardEvent('keyup', { keyCode: key } as any)
+        );
       }
     }
 
     for (const key of keyList) {
-      document.dispatchEvent(new KeyboardEvent('keydown', {'keyCode': key} as any));
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { keyCode: key } as any)
+      );
     }
 
     console.log(action);

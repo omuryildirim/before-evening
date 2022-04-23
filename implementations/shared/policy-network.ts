@@ -36,9 +36,8 @@
 
 import * as tf from '@tensorflow/tfjs';
 
-import {Memory} from "./memory";
-import {ReinforcementLearningModel} from './reinforcement-learning.model';
-
+import { Memory } from './memory';
+import { ReinforcementLearningModel } from './reinforcement-learning.model';
 
 /**
  * Policy network for controlling the cart-pole system.
@@ -64,15 +63,15 @@ class PolicyNetwork {
    * @param maxStepsPerGame
    */
   constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, maxStepsPerGame: number) {
-    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame)
+    this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame);
   }
 
   public async educateTheNet(memory: Memory, discountRate: number) {
     // Sample from memory
     const batch = memory.sample(this.model.batchSize);
     const states = batch.map(([state, ,]) => state);
-    const nextStates = batch.map(
-      ([, , , nextState]) => nextState ? nextState : tf.zeros([this.model.numStates])
+    const nextStates = batch.map(([, , , nextState]) =>
+      nextState ? nextState : tf.zeros([this.model.numStates])
     );
 
     // Predict the values of each action at each state
@@ -84,19 +83,19 @@ class PolicyNetwork {
     let y: any = [];
 
     // Update the states rewards with the discounted next states rewards
-    batch.forEach(
-      ([state, action, reward, nextState], index) => {
-        if (qsa[index]) {
-          const currentQ = qsa[index].dataSync();
-          currentQ[action] = nextState ? reward + discountRate * qsad[index].max().dataSync() : reward;
-          x.push(state.dataSync());
-          y.push(currentQ);
-        } else {
-          qsa.splice(index, 1);
-          qsad.splice(index, 1);
-        }
+    batch.forEach(([state, action, reward, nextState], index) => {
+      if (qsa[index]) {
+        const currentQ = qsa[index].dataSync();
+        currentQ[action] = nextState
+          ? reward + discountRate * qsad[index].max().dataSync()
+          : reward;
+        x.push(state.dataSync());
+        y.push(currentQ);
+      } else {
+        qsa.splice(index, 1);
+        qsad.splice(index, 1);
       }
-    );
+    });
 
     // Clean unused tensors
     qsa.forEach((state) => state.dispose());
@@ -114,7 +113,11 @@ class PolicyNetwork {
   }
 }
 
-type SaveablePolicyNetworkParams = { hiddenLayerSizesOrModel: number | tf.LayersModel; maxStepsPerGame: number; modelName: string; }
+type SaveablePolicyNetworkParams = {
+  hiddenLayerSizesOrModel: number | tf.LayersModel;
+  maxStepsPerGame: number;
+  modelName: string;
+};
 
 /**
  * A subclass of PolicyNetwork that supports saving and loading.
@@ -131,12 +134,12 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    * @param modelName
    */
   constructor({
-                hiddenLayerSizesOrModel,
-                maxStepsPerGame,
-                modelName
-              }: SaveablePolicyNetworkParams) {
+    hiddenLayerSizesOrModel,
+    maxStepsPerGame,
+    modelName,
+  }: SaveablePolicyNetworkParams) {
     super(hiddenLayerSizesOrModel, maxStepsPerGame);
-    this.modelName = modelName
+    this.modelName = modelName;
   }
 
   /**
@@ -161,7 +164,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
       return new SaveablePolicyNetwork({
         hiddenLayerSizesOrModel: model,
         maxStepsPerGame,
-        modelName
+        modelName,
       });
     } else {
       throw new Error(`Cannot find model at ${modelName}.`);

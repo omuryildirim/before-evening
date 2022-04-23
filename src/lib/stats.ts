@@ -30,7 +30,6 @@ export class Stats {
   }
 
   public end() {
-
     const time = Date.now();
 
     this.ms = time - this.startTime;
@@ -40,7 +39,6 @@ export class Stats {
     this.frames++;
 
     if (time > this.prevTime + 1000) {
-
       this.fps = Math.round((this.frames * 1000) / (time - this.prevTime));
       this.fpsMin = Math.min(this.fpsMin, this.fps);
       this.fpsMax = Math.max(this.fpsMax, this.fps);
@@ -56,4 +54,3 @@ export class Stats {
     this.startTime = this.end();
   }
 }
-

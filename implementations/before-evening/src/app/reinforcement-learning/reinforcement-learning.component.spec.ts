@@ -8,9 +8,8 @@ describe('ReinforcementLearningComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ReinforcementLearningComponent ]
-    })
-    .compileComponents();
+      declarations: [ReinforcementLearningComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
