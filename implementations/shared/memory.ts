@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import {sampleSize} from 'lodash';
+import { sampleSize } from 'lodash';
 
 export class Memory {
   private readonly maxMemory: number;

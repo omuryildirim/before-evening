@@ -1,8 +1,8 @@
 import * as tf from '@tensorflow/tfjs';
 
-import {StateUpdate} from "../../src";
+import { StateUpdate } from '../../src';
 
-import {ACTIVATION, LOSS, OPTIMIZER} from "./constants";
+import { ACTIVATION, LOSS, OPTIMIZER } from './constants';
 
 export class ReinforcementLearningModel {
   public numStates: number;
@@ -16,7 +16,12 @@ export class ReinforcementLearningModel {
    * @param {number} numActions
    * @param {number} batchSize
    */
-  constructor(hiddenLayerSizesOrModel: number | tf.LayersModel, numStates: number, numActions: number, batchSize: number) {
+  constructor(
+    hiddenLayerSizesOrModel: number | tf.LayersModel,
+    numStates: number,
+    numActions: number,
+    batchSize: number
+  ) {
     this.numStates = numStates;
     this.numActions = numActions;
     this.batchSize = batchSize;
@@ -24,30 +29,31 @@ export class ReinforcementLearningModel {
     if (hiddenLayerSizesOrModel instanceof tf.LayersModel) {
       this.network = hiddenLayerSizesOrModel;
       this.network.summary();
-      this.network.compile({optimizer: OPTIMIZER, loss: LOSS});
+      this.network.compile({ optimizer: OPTIMIZER, loss: LOSS });
     } else {
       this.defineModel(hiddenLayerSizesOrModel);
     }
   }
 
   defineModel(hiddenLayerSizes) {
-
     if (!Array.isArray(hiddenLayerSizes)) {
       hiddenLayerSizes = [hiddenLayerSizes];
     }
     this.network = tf.sequential();
     hiddenLayerSizes.forEach((hiddenLayerSize, i) => {
-      (this.network as tf.Sequential).add(tf.layers.dense({
-        units: hiddenLayerSize,
-        activation: ACTIVATION,
-        // `inputShape` is required only for the first layer.
-        inputShape: i === 0 ? [this.numStates] : undefined
-      }));
+      (this.network as tf.Sequential).add(
+        tf.layers.dense({
+          units: hiddenLayerSize,
+          activation: ACTIVATION,
+          // `inputShape` is required only for the first layer.
+          inputShape: i === 0 ? [this.numStates] : undefined,
+        })
+      );
     });
-    (this.network as tf.Sequential).add(tf.layers.dense({units: this.numActions}));
+    (this.network as tf.Sequential).add(tf.layers.dense({ units: this.numActions }));
 
     this.network.summary();
-    this.network.compile({optimizer: OPTIMIZER, loss: LOSS});
+    this.network.compile({ optimizer: OPTIMIZER, loss: LOSS });
   }
 
   /**
@@ -68,7 +74,9 @@ export class ReinforcementLearningModel {
    * @returns {number} The predictions of the best action
    */
   public predictAction(states: tf.Tensor) {
-    const prediction = tf.tidy(() => (this.network.predict(states) as tf.Tensor<tf.Rank>).dataSync()) as Float32Array;
+    const prediction = tf.tidy(() =>
+      (this.network.predict(states) as tf.Tensor<tf.Rank>).dataSync()
+    ) as Float32Array;
     return prediction.indexOf(Math.max(...Array.from(prediction.values()))) - 1;
   }
 
@@ -103,11 +111,11 @@ export class ReinforcementLearningModel {
     // if position is not in range -1:1 that means car is out of bounds
     if (position < -1 || position > 1) {
       // max minus 50 reward if car is not in road
-      reward = -10 + (-20 * (Math.abs(position) - 1));
+      reward = -10 + -20 * (Math.abs(position) - 1);
     } else {
       // max 100 reward if car is inside the road
       // min 10 reward if car is inside the road
-      reward = 100 - (90 * Math.abs(position));
+      reward = 100 - 90 * Math.abs(position);
     }
 
     // max minus 50 reward if speed is not max
@@ -116,7 +124,17 @@ export class ReinforcementLearningModel {
     return reward;
   }
 
-  public static computeRelativeReward({reward, previousReward, x, speed}: {reward: number; previousReward: number; x: number; speed: number;}) {
+  public static computeRelativeReward({
+    reward,
+    previousReward,
+    x,
+    speed,
+  }: {
+    reward: number;
+    previousReward: number;
+    x: number;
+    speed: number;
+  }) {
     // relative reward is the evaluation of current state compared to previous state
     // in this way we hope to evaluate the action based on the change happened
     // rather than the current state's positivity.

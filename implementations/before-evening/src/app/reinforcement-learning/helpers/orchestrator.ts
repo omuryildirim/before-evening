@@ -1,12 +1,12 @@
 import * as tf from '@tensorflow/tfjs';
-import {takeUntil} from "rxjs/operators";
+import { takeUntil } from 'rxjs/operators';
 
-import {ActionKeyEventMapper} from "../../../../../shared/action-key-event-mapper";
-import {Memory} from '../../../../../shared/memory';
-import {SaveablePolicyNetwork} from "../../../../../shared/policy-network";
-import {ReinforcementLearningModel} from '../../../../../shared/reinforcement-learning.model';
-import {GameStateService} from "../../game-state.service";
-import {ActionMap} from "../reinforcement-learning.types";
+import { ActionKeyEventMapper } from '../../../../../shared/action-key-event-mapper';
+import { Memory } from '../../../../../shared/memory';
+import { SaveablePolicyNetwork } from '../../../../../shared/policy-network';
+import { ReinforcementLearningModel } from '../../../../../shared/reinforcement-learning.model';
+import { GameStateService } from '../../game-state.service';
+import { ActionMap } from '../reinforcement-learning.types';
 
 export class Orchestrator {
   private policyNetwork: SaveablePolicyNetwork;
@@ -35,8 +35,16 @@ export class Orchestrator {
    * @param {number} minEpsilon
    * @param lambda
    */
-  constructor(policyNetwork: SaveablePolicyNetwork, memory: Memory, discountRate: number, maxStepsPerGame: number,
-              gameStateService: GameStateService, maxEpsilon: number, minEpsilon: number, lambda: number) {
+  constructor(
+    policyNetwork: SaveablePolicyNetwork,
+    memory: Memory,
+    discountRate: number,
+    maxStepsPerGame: number,
+    gameStateService: GameStateService,
+    maxEpsilon: number,
+    minEpsilon: number,
+    lambda: number
+  ) {
     this.gameStateService = gameStateService;
     // The main components of the environment
     this.policyNetwork = policyNetwork;
@@ -61,46 +69,67 @@ export class Orchestrator {
 
   async run() {
     let totalReward = 0;
-    let state = ReinforcementLearningModel.getState({playerX: 0, next5Curve: [0, 0, 0, 0, 0], speed: 0});
-    let {action, remainingSteps} = this.takeAction(state as any, this.maxStepsPerGame);
+    let state = ReinforcementLearningModel.getState({
+      playerX: 0,
+      next5Curve: [0, 0, 0, 0, 0],
+      speed: 0,
+    });
+    let { action, remainingSteps } = this.takeAction(
+      state as any,
+      this.maxStepsPerGame
+    );
 
     const isFinished = (resolve) => {
-      const subscription = this.gameStateService.stateUpdater.subscribe(async rawState => {
-        if (remainingSteps) {
-          const nextState = ReinforcementLearningModel.getState(rawState);
-          const reward = ReinforcementLearningModel.computeReward(rawState.playerX, rawState.speed);
+      const subscription = this.gameStateService.stateUpdater.subscribe(
+        async (rawState) => {
+          if (remainingSteps) {
+            const nextState = ReinforcementLearningModel.getState(rawState);
+            const reward = ReinforcementLearningModel.computeReward(
+              rawState.playerX,
+              rawState.speed
+            );
 
-          // Keep the car on max position if reached
-          this.memory.addSample([state, action, reward, nextState]);
+            // Keep the car on max position if reached
+            this.memory.addSample([state, action, reward, nextState]);
 
-          this.steps += 1;
-          // Exponentially decay the exploration parameter
-          this.eps = this.minEpsilon + (this.maxEpsilon - this.minEpsilon) * Math.exp(-this.lambda * this.steps);
+            this.steps += 1;
+            // Exponentially decay the exploration parameter
+            this.eps =
+              this.minEpsilon +
+              (this.maxEpsilon - this.minEpsilon) *
+                Math.exp(-this.lambda * this.steps);
 
-          state = nextState;
-          totalReward += reward;
+            state = nextState;
+            totalReward += reward;
 
-          const actionMap = this.takeAction(state as any, remainingSteps);
-          action = actionMap.action;
-          remainingSteps = actionMap.remainingSteps;
-        } else {
-          this.rewardStore.push(totalReward);
-          subscription.unsubscribe();
-          await this.policyNetwork.educateTheNet(this.memory, this.discountRate);
-          // this.maxPositionStore.push(maxPosition);
-          resolve();
+            const actionMap = this.takeAction(state as any, remainingSteps);
+            action = actionMap.action;
+            remainingSteps = actionMap.remainingSteps;
+          } else {
+            this.rewardStore.push(totalReward);
+            subscription.unsubscribe();
+            await this.policyNetwork.educateTheNet(
+              this.memory,
+              this.discountRate
+            );
+            // this.maxPositionStore.push(maxPosition);
+            resolve();
+          }
         }
-      });
+      );
     };
 
     return new Promise(isFinished);
   }
 
   takeAction(state: tf.Tensor2D, remainingSteps: number) {
-    const action = this.policyNetwork.model.chooseAction(state as any, this.eps);
+    const action = this.policyNetwork.model.chooseAction(
+      state as any,
+      this.eps
+    );
     this.gameStateService.dispatchAnAction(ActionMap[action]);
 
-    return {action: action, remainingSteps: remainingSteps - 1};
+    return { action: action, remainingSteps: remainingSteps - 1 };
   }
 
   takePredictedAction(state: tf.Tensor2D) {
@@ -109,8 +138,13 @@ export class Orchestrator {
     let bestReward = -10000000000;
 
     for (const testAction of [-1, 0, 1, 2, 3, 4, 5]) {
-      const rawState = this.gameStateService.beforeEvening.testAction(ActionKeyEventMapper.convertActionToKeyboardKeyNumber(testAction));
-      const reward = ReinforcementLearningModel.computeReward(rawState.playerX, rawState.speed);
+      const rawState = this.gameStateService.beforeEvening.testAction(
+        ActionKeyEventMapper.convertActionToKeyboardKeyNumber(testAction)
+      );
+      const reward = ReinforcementLearningModel.computeReward(
+        rawState.playerX,
+        rawState.speed
+      );
 
       if (reward > bestReward) {
         bestReward = reward;
@@ -119,16 +153,18 @@ export class Orchestrator {
     }
 
     this.totalActions += 1;
-    this.totalCorrectActions += action === bestAction ? 1:0;
-    document.querySelector(".note").innerHTML = "%" + this.totalCorrectActions*100/this.totalActions;
+    this.totalCorrectActions += action === bestAction ? 1 : 0;
+    document.querySelector('.note').innerHTML =
+      '%' + (this.totalCorrectActions * 100) / this.totalActions;
 
     this.gameStateService.dispatchAnAction(ActionMap[action]);
   }
 
   public test() {
     this.gameStateService.refreshGame.next();
-    this.gameStateService.stateUpdater.pipe(takeUntil(this.gameStateService.stopTest))
-      .subscribe(rawState => {
+    this.gameStateService.stateUpdater
+      .pipe(takeUntil(this.gameStateService.stopTest))
+      .subscribe((rawState) => {
         const state = ReinforcementLearningModel.getState(rawState);
         this.takePredictedAction(state as any);
       });

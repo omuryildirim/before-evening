@@ -1,13 +1,12 @@
 import * as fs from 'fs';
-import path from "path";
+import path from 'path';
 
-import {BeforeEvening} from '../../../src';
-import {MODEL_VERSION} from "../../shared/constants";
-import {SaveableNodePolicyNetwork} from '../../shared/policy-network.node';
-import {LogData, trainModelForNumberOfGames} from '../../shared/trainer';
+import { BeforeEvening } from '../../../src';
+import { MODEL_VERSION } from '../../shared/constants';
+import { SaveableNodePolicyNetwork } from '../../shared/policy-network.node';
+import { LogData, trainModelForNumberOfGames } from '../../shared/trainer';
 
-import {MODEL_SAVE_PATH} from "./constants";
-
+import { MODEL_SAVE_PATH } from './constants';
 
 const MIN_EPSILON = 0.5;
 const MAX_EPSILON = 0.8;
@@ -39,7 +38,10 @@ class NodeTensorflow {
 
   private async initialize() {
     if (fs.existsSync(path.resolve('../shared/' + MODEL_VERSION + '/model.json'))) {
-      this.policyNet = await SaveableNodePolicyNetwork.loadModel(this.maxStepsPerGame, MODEL_SAVE_PATH);
+      this.policyNet = await SaveableNodePolicyNetwork.loadModel(
+        this.maxStepsPerGame,
+        MODEL_SAVE_PATH
+      );
       this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
     } else {
       this.createModel();
@@ -48,14 +50,14 @@ class NodeTensorflow {
     this.beforeEvening = new BeforeEvening();
 
     await this.train();
-  };
+  }
 
   private async createModel() {
     console.log(`Creating a new model...`);
     this.policyNet = new SaveableNodePolicyNetwork({
       hiddenLayerSizesOrModel: this.hiddenLayerSize,
       maxStepsPerGame: this.maxStepsPerGame,
-      modelName: MODEL_SAVE_PATH
+      modelName: MODEL_SAVE_PATH,
     });
   }
 
@@ -66,8 +68,7 @@ class NodeTensorflow {
     }
 
     if (!(this.gamesPerIteration > 0)) {
-      throw new Error(
-        `Invalid # of games per iterations: ${this.gamesPerIteration}`);
+      throw new Error(`Invalid # of games per iterations: ${this.gamesPerIteration}`);
     }
 
     if (!(this.maxStepsPerGame > 1)) {
@@ -100,15 +101,20 @@ class NodeTensorflow {
   private onIterationEnd(iterationCount: number, totalIterations: number) {
     this.iterationStatus = `Iteration ${iterationCount} of ${totalIterations}`;
 
-    console.log('\n', '--------------------------------------------------', '\n',
-      this.iterationStatus, '\n');
+    console.log(
+      '\n',
+      '--------------------------------------------------',
+      '\n',
+      this.iterationStatus,
+      '\n'
+    );
   }
 
   private onGameEnd(gameCount: number, totalGames: number) {
     this.gameStatus = `Game ${gameCount} of ${totalGames}`;
 
     console.log('*********', '\n', this.iterationStatus, '\n', this.gameStatus, '\n');
-    console.log(this.getPassedTime())
+    console.log(this.getPassedTime());
 
     if (gameCount === totalGames) {
       this.gameStatus = 'Updating weights...';
@@ -116,7 +122,7 @@ class NodeTensorflow {
   }
 
   private writeLogToFile(dataset: LogData[]) {
-    const logStream = fs.createWriteStream('dataset.txt', {flags: 'a'});
+    const logStream = fs.createWriteStream('dataset.txt', { flags: 'a' });
     dataset.forEach((action) => {
       logStream.write(JSON.stringify(action) + '\n');
     });
@@ -126,9 +132,12 @@ class NodeTensorflow {
   private getPassedTime() {
     const minutes = (new Date().getTime() - this.startTime.getTime()) / 1000 / 60;
     const hours = Math.floor(minutes / 60);
-    const seconds = (((minutes * 100) % 100) / 100) * 60
+    const seconds = (((minutes * 100) % 100) / 100) * 60;
 
-    return `Total time: ${hours} hours ${(minutes - hours * 60).toFixed()} minutes ${seconds.toFixed()} seconds`;
+    return `Total time: ${hours} hours ${(
+      minutes -
+      hours * 60
+    ).toFixed()} minutes ${seconds.toFixed()} seconds`;
   }
 }
 

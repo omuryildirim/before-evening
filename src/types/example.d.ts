@@ -17,7 +17,7 @@
  * something();
  * ```
  */
-import {BeforeEvening} from "../index";
+import { BeforeEvening } from '../index';
 
 declare module 'BeforeEvening' {
   const BeforeEvening: BeforeEvening;

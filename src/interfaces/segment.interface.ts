@@ -1,4 +1,4 @@
-import {Sprite} from "./sprite.interface";
+import { Sprite } from './sprite.interface';
 
 export interface Segment {
   index: number;
@@ -6,7 +6,7 @@ export interface Segment {
   p2: PlayerWorld;
   curve: number;
   color: SegmentColorMap;
-  sprites: { source: Sprite, offset: number; }[];
+  sprites: { source: Sprite; offset: number }[];
   cars: [];
 }
 
@@ -18,7 +18,7 @@ export interface SegmentColorMap {
 }
 
 export interface PlayerWorld {
-  world: { y: number; z: number; };
+  world: { y: number; z: number };
   camera: CameraAxis;
   screen: PlayerScreen;
 }

@@ -1,5 +1,5 @@
 export type ActionNameList =
-  'left'
+  | 'left'
   | 'up'
   | 'right'
   | 'down'
@@ -16,7 +16,7 @@ export enum KeyboardEventKey {
   A = 65,
   D = 68,
   S = 83,
-  W = 87
+  W = 87,
 }
 
 export const ActionKeyToEventName = {
@@ -27,7 +27,7 @@ export const ActionKeyToEventName = {
   '3': 'left-up',
   '4': 'right-up',
   '5': 'right-down',
-  '6': 'left-down'
+  '6': 'left-down',
 };
 
 const ActionKeyToKeyboardEventKey = {
@@ -38,7 +38,7 @@ const ActionKeyToKeyboardEventKey = {
   '3': [KeyboardEventKey.LEFT, KeyboardEventKey.UP],
   '4': [KeyboardEventKey.RIGHT, KeyboardEventKey.UP],
   '5': [KeyboardEventKey.RIGHT, KeyboardEventKey.DOWN],
-  '6': [KeyboardEventKey.LEFT, KeyboardEventKey.DOWN]
+  '6': [KeyboardEventKey.LEFT, KeyboardEventKey.DOWN],
 };
 
 export class ActionKeyEventMapper {
