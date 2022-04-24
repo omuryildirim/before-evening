@@ -66,7 +66,7 @@ class PolicyNetwork {
     this.model = new ReinforcementLearningModel(hiddenLayerSizesOrModel, 7, 8, maxStepsPerGame);
   }
 
-  public async educateTheNet(memory: Memory, discountRate: number) {
+  public async educateTheNet(memory: Memory, discountRate: number, learningRate = 1) {
     // Sample from memory
     const batch = memory.sample(this.model.batchSize);
     const states = batch.map(([state, ,]) => state);
@@ -87,8 +87,10 @@ class PolicyNetwork {
       if (qsa[index]) {
         const currentQ = qsa[index].dataSync();
         currentQ[action] = nextState
-          ? reward + discountRate * qsad[index].max().dataSync()
-          : reward;
+          ? currentQ[action] +
+            (learningRate || 1) *
+              (reward + discountRate * qsad[index].max().dataSync() - currentQ[action])
+          : currentQ[action];
         x.push(state.dataSync());
         y.push(currentQ);
       } else {
