@@ -52,21 +52,21 @@ domains. It amounts to an incremental method for dynamic programming which impos
 demands. It works by successively improving its evaluations of the quality of particular actions at particular states. [1]
 
 ### Algorithm
-After Delta t steps into the future the agent will decide some next step. The weight for this step is calculated as gamma ^{{\Delta t}},
-where gamma  (the discount factor) is a number between 0 and 1 0<=gamma<=1 and has the effect of valuing rewards received earlier 
-higher than those received later (reflecting the value of a "good start"). 
-gamma  may also be interpreted as the probability to succeed (or survive) at every step Delta t.
+After <i>&Delta;<sub>t</sub></i> steps into the future the agent will decide some next step. The weight for this step is calculated as
+<i>&gamma;<sub>t</sub><sup>&Delta;<sub>t</sub></sup></i>,where <i>&gamma;</i> (the discount factor) is a number between 0 and 1, 0 &le; &gamma; &le; 1,
+and has the effect of valuing rewards received earlier higher than those received later (reflecting the value of a "good start"). 
+&gamma; may also be interpreted as the probability to succeed (or survive) at every step <i>&Delta;<sub>t</sub></i>.
 
 ![Q algorithm](https://wikimedia.org/api/rest_v1/media/math/render/svg/678cb558a9d59c33ef4810c9618baf34a9577686)
 
-where r_{t} is the reward received when moving from the state s_{{t}} to the state s_{t+1}, and alpha is the learning rate
-0<alpha<=1.
+where <i>r<sub>t</sub></i> is the reward received when moving from the state <i>s<sub>t</sub></i> to the state <i>s<sub>t+1</sub></i>,
+and alpha is the learning rate 0 &lt; &alpha; &le; 1.
 
-An episode of the algorithm ends when state {\displaystyle s_{t+1}}s_{t+1} is a final or terminal state. However, Q-learning can also learn in non-episodic tasks 
+An episode of the algorithm ends when state <i>s<sub>t+1</sub></i> is a final or terminal state. However, Q-learning can also learn in non-episodic tasks 
 (as a result of the property of convergent infinite series). If the discount factor is lower than 1, 
 the action values are finite even if the problem can contain infinite loops.
-For all final states s_{f}, Q(s_{f},a) is never updated, but is set to the reward value r observed for state s_{f}. 
-In most cases, Q(s_{f},a) can be taken to equal zero. [2]
+For all final states <i>s<sub>f</sub></i>, <i>Q(s<sub>f</sub>, a)</i> is never updated, but is set to the reward value r observed for state <i>s<sub>f</sub></i>. 
+In most cases, <i>Q(s<sub>f</sub>, a)</i> can be taken to equal zero. [2]
 
 ### Variables
 #### Learning rate
@@ -91,12 +91,12 @@ really learning: it cannot exploit its knowledge, and so acts as though it knows
 good balance between the two, to ensure that the agent is really learning to take the optimal actions. [5]
 
 # References
-[[1] - WATKINS, Christopher JCH; DAYAN, Peter. Q-learning. Machine learning, 1992, 8.3: 279-292.](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf)
+[[1] WATKINS, Christopher JCH; DAYAN, Peter. Q-learning. Machine learning, 1992, 8.3: 279-292.](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf)
 
-[[2] - Q-learning Algorithm. Wikipedia.](https://en.wikipedia.org/wiki/Q-learning#Algorithm)
+[[2] Q-learning Algorithm. Wikipedia.](https://en.wikipedia.org/wiki/Q-learning#Algorithm)
 
-[[3] - EVEN-DAR, Eyal; MANSOUR, Yishay; BARTLETT, Peter. Learning Rates for Q-learning. Journal of machine learning Research, 2003, 5.1.](https://www.jmlr.org/papers/volume5/evendar03a/evendar03a.pdf)
+[[3] EVEN-DAR, Eyal; MANSOUR, Yishay; BARTLETT, Peter. Learning Rates for Q-learning. Journal of machine learning Research, 2003, 5.1.](https://www.jmlr.org/papers/volume5/evendar03a/evendar03a.pdf)
 
-[[4] - Sutton, RS and Barto, AG. Reinforcement learning: an introduction. Trends in cognitive sciences, 1999, 3(9), 360.](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(99)01331-5)
+[[4] Sutton, RS and Barto, AG. Reinforcement learning: an introduction. Trends in cognitive sciences, 1999, 3(9), 360.](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(99)01331-5)
 
-[[5] - Coggan, Melanie. Exploration and exploitation in reinforcement learning. Research supervised by Prof. Doina Precup, CRA-W DMP Project at McGill University, 2004.](https://www.jmlr.org/papers/volume5/evendar03a/evendar03a.pdf)
+[[5] Coggan, Melanie. Exploration and exploitation in reinforcement learning. Research supervised by Prof. Doina Precup, CRA-W DMP Project at McGill University, 2004.](https://www.jmlr.org/papers/volume5/evendar03a/evendar03a.pdf)
