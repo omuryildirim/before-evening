@@ -122,21 +122,11 @@ export class StateService {
       this.position + this.playerZ
     );
     const playerW = SPRITES.PLAYER_STRAIGHT.w * SPRITES.SCALE;
-    let speedPercent = this.speed / this.maxSpeed;
-    const dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
     const startPosition = this.position;
 
     this.updateCars(dt, playerSegment, playerW);
 
     this.position = Utils.increase(this.position, dt * this.speed, this.trackLength);
-
-    if (this.keyLeft) {
-      this.playerX = this.playerX - dx;
-    } else if (this.keyRight) {
-      this.playerX = this.playerX + dx;
-    }
-
-    this.playerX = this.playerX - dx * speedPercent * playerSegment.curve * this.centrifugal;
 
     if (this.keyFaster) {
       this.speed = Utils.accelerate(this.speed, this.accel, dt);
@@ -145,6 +135,16 @@ export class StateService {
     } else {
       this.speed = Utils.accelerate(this.speed, this.decel, dt);
     }
+
+    let speedPercent = Math.min(this.speed / this.maxSpeed, 1);
+    const dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+    if (this.keyLeft) {
+      this.playerX = this.playerX - dx;
+    } else if (this.keyRight) {
+      this.playerX = this.playerX + dx;
+    }
+
+    this.playerX = this.playerX - dx * speedPercent * playerSegment.curve * this.centrifugal;
 
     if (this.playerX < -1 || this.playerX > 1) {
       if (this.speed > this.offRoadLimit) {
