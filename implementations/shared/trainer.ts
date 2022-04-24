@@ -13,6 +13,7 @@ type Params = {
   maxStepsPerGame: number;
   gamesPerIteration: number;
   discountRate: number;
+  learningRate: number;
   beforeEvening: BeforeEvening;
   onGameEnd: (iteration: number, totalIteration: number) => void;
   policyNet: SaveablePolicyNetwork;
@@ -45,6 +46,7 @@ const runOneEpisode = async ({
   beforeEvening,
   policyNet,
   discountRate,
+  learningRate,
   maxStepsPerGame,
   memory,
   minEpsilon,
@@ -115,7 +117,7 @@ const runOneEpisode = async ({
       previousReward = reward;
     }
 
-    await policyNet.educateTheNet(memory, discountRate);
+    await policyNet.educateTheNet(memory, discountRate, learningRate);
     resolve(totalReward);
   };
 

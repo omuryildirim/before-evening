@@ -15,6 +15,7 @@ export class Orchestrator {
   private minEpsilon: number;
   private maxEpsilon: number;
   private lambda: number;
+  private learningRate: number;
   private steps: number;
   private readonly maxStepsPerGame: number;
   private readonly discountRate: number;
@@ -39,6 +40,7 @@ export class Orchestrator {
     policyNetwork: SaveablePolicyNetwork,
     memory: Memory,
     discountRate: number,
+    learningRate: number,
     maxStepsPerGame: number,
     gameStateService: GameStateService,
     maxEpsilon: number,
@@ -61,6 +63,7 @@ export class Orchestrator {
     this.maxStepsPerGame = maxStepsPerGame;
 
     this.discountRate = discountRate;
+    this.learningRate = learningRate;
 
     // Initialization of the rewards and max positions containers
     this.rewardStore = [];
@@ -110,7 +113,8 @@ export class Orchestrator {
             subscription.unsubscribe();
             await this.policyNetwork.educateTheNet(
               this.memory,
-              this.discountRate
+              this.discountRate,
+              this.learningRate
             );
             // this.maxPositionStore.push(maxPosition);
             resolve();
