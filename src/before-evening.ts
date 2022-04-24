@@ -176,7 +176,20 @@ export class BeforeEvening {
       this.state.segmentLength,
       this.state.position + this.state.playerZ
     );
-    const speedPercent = this.state.speed / this.state.maxSpeed;
+
+    if (mockState.keyFaster) {
+      mockState.speed =
+        Math.min(Utils.accelerate(this.state.speed, this.state.accel, this.state.step), this.state.maxSpeed) / this.state.maxSpeed;
+    } else if (mockState.keySlower) {
+      mockState.speed =
+        Utils.accelerate(this.state.speed, this.state.breaking, this.state.step) /
+        this.state.maxSpeed;
+    } else {
+      mockState.speed =
+        Utils.accelerate(this.state.speed, this.state.decel, this.state.step) / this.state.maxSpeed;
+    }
+
+    const speedPercent = mockState.speed;
     const dx = this.state.step * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
     if (mockState.keyLeft) {
@@ -189,18 +202,6 @@ export class BeforeEvening {
 
     mockState.playerX =
       mockState.playerX - dx * speedPercent * playerSegment.curve * this.state.centrifugal;
-
-    if (mockState.keyFaster) {
-      mockState.speed =
-        Utils.accelerate(this.state.speed, this.state.accel, this.state.step) / this.state.maxSpeed;
-    } else if (mockState.keySlower) {
-      mockState.speed =
-        Utils.accelerate(this.state.speed, this.state.breaking, this.state.step) /
-        this.state.maxSpeed;
-    } else {
-      mockState.speed =
-        Utils.accelerate(this.state.speed, this.state.decel, this.state.step) / this.state.maxSpeed;
-    }
 
     return mockState;
   }

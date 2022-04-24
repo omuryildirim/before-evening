@@ -18,6 +18,7 @@ class NodeTensorflow {
   private readonly gamesPerIteration: number;
   private readonly maxStepsPerGame: number;
   private readonly discountRate: number;
+  private readonly learningRate: number;
   private iterationStatus: string;
   private gameStatus: string;
   private beforeEvening: BeforeEvening;
@@ -29,6 +30,7 @@ class NodeTensorflow {
     this.gamesPerIteration = 100;
     this.maxStepsPerGame = 1000;
     this.discountRate = 0.95;
+    this.learningRate = 1;
     this.iterationStatus = '';
     this.gameStatus = '';
     this.startTime = new Date();
@@ -79,6 +81,10 @@ class NodeTensorflow {
       throw new Error(`Invalid discount rate: ${this.discountRate}`);
     }
 
+    if (!(this.learningRate > 0 && this.learningRate < 1)) {
+      throw new Error(`Invalid learning rate: ${this.learningRate}`);
+    }
+
     this.onIterationEnd(0, trainIterations);
     for (let iteration = 0; iteration < trainIterations; ++iteration) {
       this.onGameEnd(0, this.gamesPerIteration);
@@ -86,6 +92,7 @@ class NodeTensorflow {
         maxEpsilon: MAX_EPSILON,
         minEpsilon: MIN_EPSILON,
         discountRate: this.discountRate,
+        learningRate: this.learningRate,
         gamesPerIteration: this.gamesPerIteration,
         maxStepsPerGame: this.maxStepsPerGame,
         beforeEvening: this.beforeEvening,
