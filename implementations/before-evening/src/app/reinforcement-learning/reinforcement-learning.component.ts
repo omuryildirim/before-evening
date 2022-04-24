@@ -25,6 +25,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
   public maxStepsPerGame: number;
   public gamesPerIteration: number;
   public discountRate: number;
+  public learningRate: number;
   public numberOfIterations: string;
   public minEpsilon: number;
   public maxEpsilon: number;
@@ -62,6 +63,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
     this.gamesPerIteration = 100;
     this.maxStepsPerGame = 3000;
     this.discountRate = 0.95;
+    this.learningRate = 1;
     this.minEpsilon = 0.5;
     this.maxEpsilon = 0.8;
     this.lambda = 0.01;
@@ -185,6 +187,9 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       if (!(this.discountRate > 0 && this.discountRate < 1)) {
         throw new Error(`Invalid discount rate: ${this.discountRate}`);
       }
+      if (!(this.learningRate > 0 && this.learningRate < 1)) {
+        throw new Error(`Invalid learning rate: ${this.learningRate}`);
+      }
 
       this.onIterationEnd(0, trainIterations);
       this.stopRequested = false;
@@ -197,6 +202,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
             maxEpsilon: this.maxEpsilon,
             minEpsilon: this.minEpsilon,
             discountRate: this.discountRate,
+            learningRate: this.learningRate,
             gamesPerIteration: this.gamesPerIteration,
             maxStepsPerGame: this.maxStepsPerGame,
             beforeEvening: this.gameStateService.beforeEvening,
@@ -267,6 +273,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
         this.policyNet,
         memory,
         this.discountRate,
+        this.learningRate,
         this.maxStepsPerGame,
         this.gameStateService,
         this.maxEpsilon,
@@ -285,6 +292,7 @@ export class ReinforcementLearningComponent implements OnInit, AfterViewInit {
       this.policyNet,
       memory,
       0,
+        0,
       0,
       this.gameStateService,
       this.maxEpsilon,

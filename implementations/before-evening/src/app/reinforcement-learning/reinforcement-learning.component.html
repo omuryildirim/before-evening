@@ -93,9 +93,25 @@
           <label class="input-label">Max. steps per game:</label>
           <input [(ngModel)]="maxStepsPerGame" type="number"/>
         </div>
-        <div class="input-div">
-          <label class="input-label">Reward discount rate:</label>
-          <input [(ngModel)]="discountRate" type="number"/>
+        <div class="with-cols">
+          <div class="input-div">
+            <label class="input-label">Learning rate (<i>a</i>):</label>
+            <input [(ngModel)]="learningRate" type="number"/>
+          </div>
+          <div class="input-div">
+            <label class="input-label">Discount rate (<i>&gamma;</i>):</label>
+            <input [(ngModel)]="discountRate" type="number"/>
+          </div>
+        </div>
+        <div class="with-cols">
+          <div class="input-div">
+            <label class="input-label">Min epsilon (<i>&epsilon;<sub>min</sub></i>):</label>
+            <input [(ngModel)]="minEpsilon" type="number"/>
+          </div>
+          <div class="input-div">
+            <label class="input-label">Max epsilon (<i>&epsilon;<sub>max</sub></i>):</label>
+            <input [(ngModel)]="maxEpsilon" type="number"/>
+          </div>
         </div>
         <div class="input-div">
           <label class="input-label">Render during training:</label>
