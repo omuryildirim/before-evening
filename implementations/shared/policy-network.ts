@@ -178,7 +178,11 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
    *   object. Else, `undefined`.
    */
   static async checkStoredModelStatus(modelName: string) {
-    return await tf.loadLayersModel(modelName);
+    try {
+      return await tf.loadLayersModel(modelName);
+    } catch (e) {
+      return null;
+    }
   }
 
   /**
