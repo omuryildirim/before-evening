@@ -47,11 +47,11 @@
 </table>
 
 <div id="racer">
-  <div id="hud">
-    <span id="speed" class="hud"><span id="speed_value" class="value">0</span> mph</span>
-    <span id="current_lap_time" class="hud">Time: <span id="current_lap_time_value" class="value">0.0</span></span>
-    <span id="last_lap_time" class="hud">Last Lap: <span id="last_lap_time_value" class="value">0.0</span></span>
-    <span id="fast_lap_time" class="hud">Fastest Lap: <span id="fast_lap_time_value" class="value">0.0</span></span>
+  <div *ngIf="beforeEvening" id="hud">
+    <span id="speed" class="hud"><span id="speed_value" class="value">{{beforeEvening.stats.speed}}</span> km/h</span>
+    <span id="current_lap_time" class="hud">Time: <span id="current_lap_time_value" class="value">{{beforeEvening.stats.currentLapTime}}</span></span>
+    <span *ngIf="beforeEvening.stats.lastLapTime" id="last_lap_time" class="hud">Last Lap: <span id="last_lap_time_value" class="value">{{beforeEvening.stats.lastLapTime}}</span></span>
+    <span *ngIf="beforeEvening.stats.bestLapTime" id="fast_lap_time" class="hud">Fastest Lap: <span id="fast_lap_time_value" class="value">{{beforeEvening.stats.bestLapTime}}</span></span>
   </div>
   <canvas id="canvas">
     Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
