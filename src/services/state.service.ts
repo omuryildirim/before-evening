@@ -53,6 +53,7 @@ export class StateService {
   public totalCars: number; // total number of cars on the road
   public currentLapTime: number; // current lap time
   public lastLapTime: number; // last lap time
+  public passedFromStartLine = false;
 
   public keyLeft: boolean;
   public keyRight: boolean;
@@ -128,6 +129,12 @@ export class StateService {
 
     this.position = Utils.increase(this.position, dt * this.speed, this.trackLength);
 
+    // determine if car passed from start line before.
+    // if starting position is 0 or current position is lower than starting position
+    // which means car finished track and started a new tour
+    this.passedFromStartLine =
+      this.passedFromStartLine || startPosition === 0 || this.position < startPosition;
+
     if (this.keyFaster) {
       this.speed = Utils.accelerate(this.speed, this.accel, dt);
     } else if (this.keySlower) {
@@ -200,14 +207,18 @@ export class StateService {
       1
     );
 
-    if (this.position > this.playerZ) {
-      if (this.currentLapTime && startPosition < this.playerZ) {
-        this.lastLapTime = this.currentLapTime;
-        this.currentLapTime = 0;
+    if (!this.passedFromStartLine) {
+      this.stats.addTime({dt, increaseCurrentLapTime: false, refreshLap: false});
+    } else {
+      if (startPosition > this.position) {
+        this.stats.addTime({dt, increaseCurrentLapTime: true, refreshLap: true});
       } else {
         this.currentLapTime += dt;
+        this.stats.addTime({dt, increaseCurrentLapTime: true, refreshLap: false});
       }
     }
+
+    this.stats.updateSpeed(this.speed);
 
     const next5Curve = [];
     for (let index = 1; index < 6; index++) {
@@ -319,6 +330,7 @@ export class StateService {
     this.totalCars = 0; // total number of cars on the road
     this.currentLapTime = 0; // current lap time
     this.lastLapTime = null; // last lap time
+    this.stats.reset();
 
     this.keyLeft = false;
     this.keyRight = false;

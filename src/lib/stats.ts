@@ -9,6 +9,12 @@ export class Stats {
   public fpsMax: number;
   private frames: number;
 
+  private _currentLapTime: number; // current lap time
+  private _lastLapTime: number; // last lap time
+  private _bestLapTime: number; // last lap time
+  private _speed: number; // last lap time
+  public totalTime: number; // last lap time
+
   constructor() {
     this.startTime = Date.now();
     this.prevTime = this.startTime;
@@ -19,6 +25,62 @@ export class Stats {
     this.fpsMin = 1000;
     this.fpsMax = 0;
     this.frames = 0;
+
+    this._currentLapTime = 0;
+    this._lastLapTime = 0;
+    this._bestLapTime = 0;
+    this.totalTime = 0;
+    this._speed = 0;
+  }
+
+  public addTime({
+    dt,
+    increaseCurrentLapTime,
+    refreshLap,
+  }: {
+    dt: number;
+    increaseCurrentLapTime: boolean;
+    refreshLap: boolean;
+  }) {
+    this.totalTime += dt;
+
+    if (increaseCurrentLapTime) {
+      this._currentLapTime += dt;
+    }
+
+    if (refreshLap) {
+      this._lastLapTime = this._currentLapTime;
+      this._currentLapTime = 0;
+      this._bestLapTime = this._bestLapTime
+        ? Math.min(this._bestLapTime, this._lastLapTime)
+        : this._lastLapTime;
+    }
+  }
+
+  get currentLapTime() {
+    return this._currentLapTime.toFixed(2);
+  }
+
+  get lastLapTime() {
+    return this._lastLapTime.toFixed(2);
+  }
+
+  get bestLapTime() {
+    return this._bestLapTime.toFixed(2);
+  }
+
+  public updateSpeed(speed: number) {
+    this._speed = 1.60934 * speed / 100;
+  }
+
+  get speed() {
+    return this._speed.toFixed();
+  }
+
+  public reset() {
+    this.totalTime = 0;
+    this._currentLapTime = 0;
+    this._lastLapTime = 0;
   }
 
   public current() {
