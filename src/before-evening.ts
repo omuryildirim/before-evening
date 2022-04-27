@@ -179,7 +179,7 @@ export class BeforeEvening {
 
     if (mockState.keyFaster) {
       mockState.speed =
-        Math.min(Utils.accelerate(this.state.speed, this.state.accel, this.state.step), this.state.maxSpeed) / this.state.maxSpeed;
+        Math.min(Utils.accelerate(this.state.speed, this.state.accel, this.state.step) / this.state.maxSpeed, 1);
     } else if (mockState.keySlower) {
       mockState.speed =
         Utils.accelerate(this.state.speed, this.state.breaking, this.state.step) /
