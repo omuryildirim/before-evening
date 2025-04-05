@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 
-import { StateUpdate } from '../../src';
+import { StateUpdate } from 'before-evening-game-engine';
 
 import { ACTIVATION, LOSS, OPTIMIZER } from './constants';
 
@@ -13,7 +13,7 @@ export class ReinforcementLearningModel {
   /**
    * @param hiddenLayerSizesOrModel
    * @param {number} numStates
-   * @param {number} numActions
+   * @param {number} numActions1
    * @param {number} batchSize
    */
   constructor(

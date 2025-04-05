@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-import { BeforeEveningGameEngine, KEY, StateUpdate } from '../../../../src';
+import { BeforeEveningGameEngine, KEY, StateUpdate } from 'before-evening-game-engine';
 
 import { ActionList } from './reinforcement-learning/reinforcement-learning.types';
 

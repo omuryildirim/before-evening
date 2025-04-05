@@ -1,6 +1,6 @@
 import { AfterViewInit, Component } from '@angular/core';
 
-import { BeforeEveningGameEngine, StateUpdate } from '../../../../../src';
+import { BeforeEveningGameEngine, StateUpdate } from 'before-evening-game-engine';
 import { GameStateService } from '../game-state.service';
 
 import { StatsRenderer } from './statsRenderer';

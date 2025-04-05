@@ -4,15 +4,23 @@
   "description": "",
   "repository": "https://github.com/omuryildirim/before-evening",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pnpm build:main && pnpm build:module",
+    "build:main": "tsc -p tsconfig.json",
+    "build:module": "tsc -p tsconfig.module.json",
     "lint": "biome check ./src",
     "lint:fix": "biome check --write ./src"
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "@tensorflow/tfjs": "2.4.0",
     "@tensorflow/tfjs-node": "2.4.0",
+    "before-evening-game-engine": "workspace:*",
+    "lodash.samplesize": "4.2.0",
     "tfjs-node-save": "0.0.2"
+  },
+  "devDependencies": {
+    "@types/lodash.samplesize": "4.2.9",
+    "@types/webgl2": "0.0.11"
   }
 }

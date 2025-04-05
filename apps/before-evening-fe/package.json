@@ -21,7 +21,9 @@
     "@angular/platform-browser-dynamic": "~8.2.13",
     "@angular/router": "~8.2.13",
     "@tensorflow/tfjs": "2.4.0",
+    "before-evening-game-engine": "workspace:*",
     "rxjs": "^6.4.0",
+    "shared": "workspace:*",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },

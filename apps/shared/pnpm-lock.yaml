@@ -7,16 +7,29 @@ settings:
 importers:
 
   .:
-    devDependencies:
+    dependencies:
       '@tensorflow/tfjs':
         specifier: 2.4.0
         version: 2.4.0(seedrandom@2.4.3)
       '@tensorflow/tfjs-node':
         specifier: 2.4.0
         version: 2.4.0(seedrandom@2.4.3)
+      before-evening-game-engine:
+        specifier: workspace:*
+        version: link:../before-evening-game-engine
+      lodash.samplesize:
+        specifier: 4.2.0
+        version: 4.2.0
       tfjs-node-save:
         specifier: 0.0.2
         version: 0.0.2
+    devDependencies:
+      '@types/lodash.samplesize':
+        specifier: 4.2.9
+        version: 4.2.9
+      '@types/webgl2':
+        specifier: 0.0.11
+        version: 0.0.11
 
 packages:
 
@@ -60,6 +73,12 @@ packages:
     resolution: {integrity: sha512-V1XLtUDyhs1yodu9LinakSeIdT7SfFLBbHqCFPKaIWo9d9u3ZGFP/owzsWBk7Wqoh74bpm+kCF0gDg93Qx6ssw==}
     hasBin: true
 
+  '@types/lodash.samplesize@4.2.9':
+    resolution: {integrity: sha512-z193XZXQsZ7nUlj6hai6kCDulX9/XDNdCC6XJvGI1cgWcdyo7iNGPxZjSaH/fDG273uo8xjP+c/tMslQvyu8Sg==}
+
+  '@types/lodash@4.17.16':
+    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
+
   '@types/node-fetch@2.6.12':
     resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
 
@@ -74,6 +93,9 @@ packages:
 
   '@types/webgl-ext@0.0.30':
     resolution: {integrity: sha512-LKVgNmBxN0BbljJrVUwkxwRYqzsAEPcZOe6S2T6ZaBDIrFp0qu4FNlpc5sM1tGbXUYFgdVQIoeLk1Y1UoblyEg==}
+
+  '@types/webgl2@0.0.11':
+    resolution: {integrity: sha512-LFa4je4lUbqDVRNeC2W1ZRM8dOgsGsm23MZO7m/EllCVg07yB65W3eUF4MAM+0LU9X6x/0NTrvXxAW0pmipNdw==}
 
   '@types/webgl2@0.0.4':
     resolution: {integrity: sha512-PACt1xdErJbMUOUweSrbVM7gSIYm1vTncW2hF6Os/EeWi6TXYAYMPp+8v6rzHmypE5gHrxaxZNXgMkJVIdZpHw==}
@@ -286,6 +308,9 @@ packages:
 
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
+
+  lodash.samplesize@4.2.0:
+    resolution: {integrity: sha512-1ZhKV7/nuISuaQdxfCqrs4HHxXIYN+0Z4f7NMQn2PHkxFZJGavJQ1j/paxyJnLJmN2ZamNN6SMepneV+dCgQTA==}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -539,6 +564,12 @@ snapshots:
     transitivePeerDependencies:
       - seedrandom
 
+  '@types/lodash.samplesize@4.2.9':
+    dependencies:
+      '@types/lodash': 4.17.16
+
+  '@types/lodash@4.17.16': {}
+
   '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 22.14.0
@@ -553,6 +584,8 @@ snapshots:
   '@types/seedrandom@2.4.27': {}
 
   '@types/webgl-ext@0.0.30': {}
+
+  '@types/webgl2@0.0.11': {}
 
   '@types/webgl2@0.0.4': {}
 
@@ -761,6 +794,8 @@ snapshots:
       number-is-nan: 1.0.1
 
   isarray@1.0.0: {}
+
+  lodash.samplesize@4.2.0: {}
 
   math-intrinsics@1.1.0: {}
 

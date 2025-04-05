@@ -1,10 +1,8 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import { BeforeEveningGameEngine } from '../../../src';
-import { MODEL_VERSION } from '../../shared/constants';
-import { SaveableNodePolicyNetwork } from '../../shared/policy-network.node';
-import { LogData, trainModelForNumberOfGames } from '../../shared/trainer';
+import { BeforeEveningGameEngine } from 'before-evening-game-engine';
+import { MODEL_VERSION, SaveableNodePolicyNetwork, LogData, trainModelForNumberOfGames } from 'shared';
 
 import { MODEL_SAVE_PATH } from './constants';
 
@@ -39,7 +37,7 @@ class NodeTensorflow {
   }
 
   private async initialize() {
-    if (fs.existsSync(path.resolve('../shared/' + MODEL_VERSION + '/model.json'))) {
+    if (fs.existsSync(path.resolve('../../shared/' + MODEL_VERSION + '/model.json'))) {
       this.policyNet = await SaveableNodePolicyNetwork.loadModel(
         this.maxStepsPerGame,
         MODEL_SAVE_PATH

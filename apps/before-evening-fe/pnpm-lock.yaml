@@ -35,9 +35,15 @@ importers:
       '@tensorflow/tfjs':
         specifier: 2.4.0
         version: 2.4.0(seedrandom@2.4.3)
+      before-evening-game-engine:
+        specifier: workspace:*
+        version: link:../before-evening-game-engine
       rxjs:
         specifier: ^6.4.0
         version: 6.6.7
+      shared:
+        specifier: workspace:*
+        version: link:../shared
       tslib:
         specifier: ^1.10.0
         version: 1.14.1

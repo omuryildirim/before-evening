@@ -14,6 +14,12 @@ importers:
       '@tensorflow/tfjs-node':
         specifier: ^2.4.0
         version: 2.8.6(seedrandom@2.4.3)
+      before-evening-game-engine:
+        specifier: workspace:*
+        version: link:../before-evening-game-engine
+      shared:
+        specifier: workspace:*
+        version: link:../shared
     devDependencies:
       '@types/node':
         specifier: ^14.11.10

@@ -1,9 +1,7 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import * as tf from '@tensorflow/tfjs';
 
-import { Memory } from '../../../../shared/memory';
-import { SaveablePolicyNetwork } from '../../../../shared/policy-network';
-import { trainModelForNumberOfGames } from '../../../../shared/trainer';
+import { Memory, SaveablePolicyNetwork, trainModelForNumberOfGames } from 'shared';
 import { GameStateService } from '../game-state.service';
 
 import {

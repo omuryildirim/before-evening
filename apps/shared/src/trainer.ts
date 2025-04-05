@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 
-import { BeforeEveningGameEngine, StateUpdate } from '../../src';
+import { BeforeEveningGameEngine, StateUpdate } from 'before-evening-game-engine';
 
 import { ActionKeyEventMapper, ActionKeyToEventName } from './action-key-event-mapper';
 import { Memory } from './memory';
