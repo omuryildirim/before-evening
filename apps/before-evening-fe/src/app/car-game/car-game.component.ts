@@ -1,6 +1,6 @@
 import { AfterViewInit, Component } from '@angular/core';
 
-import { BeforeEvening, StateUpdate } from '../../../../../src';
+import { BeforeEveningGameEngine, StateUpdate } from '../../../../../src';
 import { GameStateService } from '../game-state.service';
 
 import { StatsRenderer } from './statsRenderer';
@@ -15,7 +15,7 @@ export class CarGameComponent implements AfterViewInit {
   public skipRender: boolean;
   public readonly doNotRenderStats: boolean;
 
-  private beforeEvening: BeforeEvening;
+  private beforeEvening: BeforeEveningGameEngine;
 
   constructor(private gameStateService: GameStateService) {
     this.doNotRenderStats = true;
@@ -26,7 +26,7 @@ export class CarGameComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.beforeEvening = new BeforeEvening();
+    this.beforeEvening = new BeforeEveningGameEngine();
     this.gameStateService.beforeEvening = this.beforeEvening;
 
     this.gameStateService.associateStateUpdater(this.beforeEvening.stateUpdate);

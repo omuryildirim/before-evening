@@ -10,7 +10,9 @@
   "keywords": [],
   "scripts": {
     "start": "tsc -p tsconfig.json -w",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "lint": "biome check ./src",
+    "lint:fix": "biome check --write ./src"
   },
   "engines": {
     "node": ">=10"

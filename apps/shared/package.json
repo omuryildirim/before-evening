@@ -4,7 +4,9 @@
   "description": "",
   "repository": "https://github.com/omuryildirim/before-evening",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "biome check ./src",
+    "lint:fix": "biome check --write ./src"
   },
   "author": "",
   "license": "ISC",

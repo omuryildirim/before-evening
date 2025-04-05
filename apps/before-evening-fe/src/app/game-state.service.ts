@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-import { BeforeEvening, KEY, StateUpdate } from '../../../../src';
+import { BeforeEveningGameEngine, KEY, StateUpdate } from '../../../../src';
 
 import { ActionList } from './reinforcement-learning/reinforcement-learning.types';
 
@@ -11,7 +11,7 @@ export class GameStateService {
   public refreshGame: Subject<null>;
   private previousActions: number[];
   public stopTest: Subject<boolean>;
-  public beforeEvening: BeforeEvening;
+  public beforeEvening: BeforeEveningGameEngine;
 
   constructor() {
     this.refreshGame = new Subject<null>();

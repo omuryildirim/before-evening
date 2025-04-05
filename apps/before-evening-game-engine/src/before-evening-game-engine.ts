@@ -11,7 +11,7 @@ import { StateService } from './services/state.service';
 
 export * from './helpers/sprites';
 
-export class BeforeEvening {
+export class BeforeEveningGameEngine {
   private state: StateService;
   private roadHelper: RoadHelper;
   private readonly renderService: Render;

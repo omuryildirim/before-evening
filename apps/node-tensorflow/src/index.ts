@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import { BeforeEvening } from '../../../src';
+import { BeforeEveningGameEngine } from '../../../src';
 import { MODEL_VERSION } from '../../shared/constants';
 import { SaveableNodePolicyNetwork } from '../../shared/policy-network.node';
 import { LogData, trainModelForNumberOfGames } from '../../shared/trainer';
@@ -21,7 +21,7 @@ class NodeTensorflow {
   private readonly learningRate: number;
   private iterationStatus: string;
   private gameStatus: string;
-  private beforeEvening: BeforeEvening;
+  private beforeEvening: BeforeEveningGameEngine;
   private startTime: Date;
 
   constructor() {
@@ -49,7 +49,7 @@ class NodeTensorflow {
       this.createModel();
     }
 
-    this.beforeEvening = new BeforeEvening();
+    this.beforeEvening = new BeforeEveningGameEngine();
 
     await this.train();
   }

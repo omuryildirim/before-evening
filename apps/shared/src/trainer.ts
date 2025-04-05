@@ -1,6 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 
-import { BeforeEvening, StateUpdate } from '../../src';
+import { BeforeEveningGameEngine, StateUpdate } from '../../src';
 
 import { ActionKeyEventMapper, ActionKeyToEventName } from './action-key-event-mapper';
 import { Memory } from './memory';
@@ -14,7 +14,7 @@ type Params = {
   gamesPerIteration: number;
   discountRate: number;
   learningRate: number;
-  beforeEvening: BeforeEvening;
+  beforeEvening: BeforeEveningGameEngine;
   onGameEnd: (iteration: number, totalIteration: number) => void;
   policyNet: SaveablePolicyNetwork;
   minEpsilon: number;
@@ -130,7 +130,7 @@ type TakeActionParams = {
   previousAction: number;
   epsilon: number;
   policyNet: SaveablePolicyNetwork;
-  beforeEvening: BeforeEvening;
+  beforeEvening: BeforeEveningGameEngine;
 };
 
 const takeAction = ({
@@ -170,7 +170,7 @@ type CreateNewDatasetPointParams = {
   action: number;
   relativeReward: number;
   reward: number;
-  beforeEvening: BeforeEvening;
+  beforeEvening: BeforeEveningGameEngine;
   dataset: LogData[];
 };
 
