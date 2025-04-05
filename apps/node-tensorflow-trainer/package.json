@@ -18,10 +18,13 @@
     "node": ">=10"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "2.4.0",
-    "@tensorflow/tfjs-node": "2.4.0",
+    "@tensorflow/tfjs": "4.22.0",
+    "@tensorflow/tfjs-node": "4.22.0",
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.8"
   },
   "packageManager": "pnpm@10.4.1",
   "files": [
@@ -32,29 +35,5 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
-  ],
-  "ava": {
-    "failFast": true,
-    "timeout": "60s",
-    "typescript": {
-      "rewritePaths": {
-        "src/": "build/main/"
-      }
-    },
-    "files": [
-      "!test",
-      "!build/module/**"
-    ],
-    "ignoredByWatcher": [
-      "test"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
-  "prettier": {
-    "singleQuote": true
-  }
+  ]
 }

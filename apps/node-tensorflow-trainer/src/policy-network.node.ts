@@ -1,6 +1,6 @@
 import * as tf from "@tensorflow/tfjs-node";
 
-import { SaveablePolicyNetwork } from "./policy-network";
+import { SaveablePolicyNetwork } from "@before-evening/shared";
 
 export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
 	/**
