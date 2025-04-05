@@ -1,3 +1,11 @@
+## [1.0.0] - 2025-04-25
+
+### Changed
+- Migrated to pnpm workspaces
+- Introduced dependabot
+- Migrated to biome
+- Introducing turbo repo
+
 ## [0.3.0] - 2022-04-19
 
 ### Changed

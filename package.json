@@ -1,6 +1,6 @@
 {
   "name": "before-evening",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Before evening",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
@@ -12,59 +12,24 @@
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
-    "fix": "run-s fix:*",
-    "fix:prettier": "prettier \"**/*.ts\" --write",
-    "fix:lint": "eslint . --ext .ts --fix",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "test": "run-s build test:*",
-    "test:lint": "eslint src --ext .ts",
-    "test:prettier": "prettier \"**/*.ts\" --list-different",
-    "test:spelling": "cspell \"{README.md,.github/*.md,src/**/*.ts}\"",
-    "test:unit": "nyc --silent ava",
     "start": "tsc -p tsconfig.json -w",
-    "watch:test": "nyc --silent ava --watch",
-    "cov": "run-s build test:unit cov:html cov:lcov && open-cli coverage/index.html",
-    "cov:html": "nyc report --reporter=html",
-    "cov:lcov": "nyc report --reporter=lcov",
-    "cov:send": "run-s cov:lcov && codecov",
-    "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "doc": "run-s doc:html && open-cli build/docs/index.html",
-    "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --out build/docs",
-    "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
-    "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
-    "version": "standard-version",
-    "reset-hard": "git clean -dfx && git reset --hard && npm i",
-    "prepare-release": "run-s reset-hard test cov:check doc:html version doc:publish"
+    "watch:test": "nyc --silent ava --watch"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">20"
   },
   "dependencies": {
     "rx-subject": "^3.1.0",
     "rxjs": "^6.6.3"
   },
   "devDependencies": {
-    "@ava/typescript": "^1.1.1",
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@typescript-eslint/eslint-plugin": "^4.0.1",
-    "@typescript-eslint/parser": "^4.0.1",
-    "ava": "^4.2.0",
-    "codecov": "^3.5.0",
-    "cspell": "^4.1.0",
-    "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^7.8.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-functional": "^3.0.2",
-    "eslint-plugin-import": "^2.22.0",
-    "gh-pages": "^3.1.0",
-    "npm-run-all": "^4.1.5",
-    "nyc": "^15.1.0",
-    "open-cli": "^6.0.1",
-    "prettier": "2.6.2",
-    "standard-version": "^9.3.2",
+    "@biomejs/biome": "1.9.4",
     "ts-node": "^9.0.0",
-    "typedoc": "^0.22.15",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "turbo": "2.4.4"
   },
   "files": [
     "build/main",
@@ -74,35 +39,5 @@
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
-  ],
-  "ava": {
-    "failFast": true,
-    "timeout": "60s",
-    "typescript": {
-      "rewritePaths": {
-        "src/": "build/main/"
-      }
-    },
-    "files": [
-      "!test",
-      "!build/module/**"
-    ],
-    "ignoredByWatcher": [
-      "test"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
-  "prettier": {
-    "singleQuote": true
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": [
-      "**/*.spec.js"
-    ]
-  }
+  ]
 }
