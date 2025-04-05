@@ -21,7 +21,7 @@
     "@biomejs/biome": "1.9.4",
     "@types/node": "20.17.30",
     "turbo": "2.5.0",
-    "ts-node": "9.0.0",
+    "ts-node": "10.9.2",
     "typescript": "5.8.3"
   },
   "files": [
