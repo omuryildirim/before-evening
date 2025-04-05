@@ -1,5 +1,5 @@
 # Demo
-You can see a [live demo](http://be.ignorethedark.com/) on this [link](http://be.ignorethedark.com/).
+[The live demo](http://be.ignorethedark.com/).
 
 
 # Before Evening
