@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import path from "path";
+import * as fs from "node:fs";
+import path from "node:path";
 
 import { BeforeEveningGameEngine } from "@before-evening/game-engine";
 import {
@@ -43,17 +43,15 @@ class NodeTensorflow {
 
 	private async initialize() {
 		if (
-			fs.existsSync(
-				path.resolve("../../shared/" + MODEL_VERSION + "/model.json"),
-			)
+			fs.existsSync(path.resolve(`../../shared/${MODEL_VERSION}/model.json`))
 		) {
 			this.policyNet = await SaveableNodePolicyNetwork.loadModel(
 				this.maxStepsPerGame,
 				MODEL_SAVE_PATH,
 			);
-			this.hiddenLayerSize = this.policyNet.hiddenLayerSizes();
+			this.hiddenLayerSize = this.policyNet.hiddenLayerSizes() as number;
 		} else {
-			this.createModel();
+			await this.createModel();
 		}
 
 		this.beforeEvening = new BeforeEveningGameEngine();
@@ -62,7 +60,7 @@ class NodeTensorflow {
 	}
 
 	private async createModel() {
-		console.log(`Creating a new model...`);
+		console.log("Creating a new model...");
 		this.policyNet = new SaveableNodePolicyNetwork({
 			hiddenLayerSizesOrModel: this.hiddenLayerSize,
 			maxStepsPerGame: this.maxStepsPerGame,
@@ -146,9 +144,9 @@ class NodeTensorflow {
 
 	private writeLogToFile(dataset: LogData[]) {
 		const logStream = fs.createWriteStream("dataset.txt", { flags: "a" });
-		dataset.forEach((action) => {
-			logStream.write(JSON.stringify(action) + "\n");
-		});
+		for (const action of dataset) {
+			logStream.write(`${JSON.stringify(action)}\n`);
+		}
 		logStream.end();
 	}
 
