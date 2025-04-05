@@ -1,7 +1,7 @@
 {
-  "name": "node-tensorflow",
+  "name": "@before-evening/node-tensorflow-trainer",
   "version": "1.1.0",
-  "description": "Node Tensorflow",
+  "description": "Train agent in Node environment using TensorFlow.js",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
@@ -20,8 +20,8 @@
   "dependencies": {
     "@tensorflow/tfjs": "^2.4.0",
     "@tensorflow/tfjs-node": "^2.4.0",
-    "before-evening-game-engine": "workspace:*",
-    "shared": "workspace:*"
+    "@before-evening/game-engine": "workspace:*",
+    "@before-evening/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^14.11.10",

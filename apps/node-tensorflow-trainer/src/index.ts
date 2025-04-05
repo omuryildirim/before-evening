@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import { BeforeEveningGameEngine } from 'before-evening-game-engine';
-import { MODEL_VERSION, SaveableNodePolicyNetwork, LogData, trainModelForNumberOfGames } from 'shared';
+import { BeforeEveningGameEngine } from '@before-evening/game-engine';
+import { MODEL_VERSION, SaveableNodePolicyNetwork, LogData, trainModelForNumberOfGames } from '@before-evening/shared';
 
 import { MODEL_SAVE_PATH } from './constants';
 

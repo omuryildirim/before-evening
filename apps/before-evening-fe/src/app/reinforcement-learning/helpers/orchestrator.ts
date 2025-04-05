@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { ActionKeyEventMapper, Memory , SaveablePolicyNetwork, ReinforcementLearningModel } from 'shared';
+import { ActionKeyEventMapper, Memory , SaveablePolicyNetwork, ReinforcementLearningModel } from '@before-evening/shared';
 import { GameStateService } from '../../game-state.service';
 import { ActionMap } from '../reinforcement-learning.types';
 

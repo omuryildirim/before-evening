@@ -8,15 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@before-evening/game-engine':
+        specifier: workspace:*
+        version: link:../before-evening-game-engine
       '@tensorflow/tfjs':
         specifier: 2.4.0
         version: 2.4.0(seedrandom@2.4.3)
       '@tensorflow/tfjs-node':
         specifier: 2.4.0
         version: 2.4.0(seedrandom@2.4.3)
-      before-evening-game-engine:
-        specifier: workspace:*
-        version: link:../before-evening-game-engine
       lodash.samplesize:
         specifier: 4.2.0
         version: 4.2.0

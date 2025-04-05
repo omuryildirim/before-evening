@@ -1,4 +1,4 @@
-import { MODEL_VERSION } from 'shared';
+import { MODEL_VERSION } from '@before-evening/shared';
 
 // The IndexedDB path where the model of the policy network will be saved.
 export const MODEL_SAVE_PATH =

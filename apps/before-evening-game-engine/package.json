@@ -1,5 +1,5 @@
 {
-  "name": "before-evening-game-engine",
+  "name": "@before-evening/game-engine",
   "version": "1.0.0",
   "description": "Before evening",
   "main": "build/main/index.js",
