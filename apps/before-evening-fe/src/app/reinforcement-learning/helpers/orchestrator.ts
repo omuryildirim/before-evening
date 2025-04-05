@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import { takeUntil } from 'rxjs/operators';
 
-import { ActionKeyEventMapper, Memory , SaveablePolicyNetwork, ReinforcementLearningModel } from '@before-evening/shared';
+import { convertActionToKeyboardKeyNumber, Memory , SaveablePolicyNetwork, ReinforcementLearningModel } from '@before-evening/shared';
 import { GameStateService } from '../../game-state.service';
 import { ActionMap } from '../reinforcement-learning.types';
 
@@ -140,7 +140,7 @@ export class Orchestrator {
 
     for (const testAction of [-1, 0, 1, 2, 3, 4, 5]) {
       const rawState = this.gameStateService.beforeEvening.testAction(
-        ActionKeyEventMapper.convertActionToKeyboardKeyNumber(testAction)
+        convertActionToKeyboardKeyNumber(testAction)
       );
       const reward = ReinforcementLearningModel.computeReward(
         rawState.playerX,

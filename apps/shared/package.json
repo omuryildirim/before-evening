@@ -30,6 +30,7 @@
     "@types/lodash.samplesize": "4.2.9",
     "@types/webgl2": "0.0.11"
   },
+  "packageManager": "pnpm@10.4.1",
   "files": [
     "build/main",
     "build/module",

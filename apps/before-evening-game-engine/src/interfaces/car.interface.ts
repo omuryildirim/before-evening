@@ -1,8 +1,8 @@
-import { Sprite } from './sprite.interface';
+import type { Sprite } from "./sprite.interface";
 
 export interface Car {
-  offset: number;
-  z: number;
-  sprite: Sprite;
-  speed: number;
+	offset: number;
+	z: number;
+	sprite: Sprite;
+	speed: number;
 }

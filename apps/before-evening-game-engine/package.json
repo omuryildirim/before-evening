@@ -30,6 +30,7 @@
     "typescript": "^4.0.2",
     "turbo": "2.4.4"
   },
+  "packageManager": "pnpm@10.4.1",
   "files": [
     "build/main",
     "build/module",

@@ -1,1 +1,1 @@
-export { StateUpdate } from './state.interfaces';
+export { StateUpdate } from "./state.interfaces";
