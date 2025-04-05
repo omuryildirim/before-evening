@@ -8,6 +8,7 @@ import type { Segment } from "../interfaces/segment.interface";
 import type { Stats } from "../lib/stats";
 import { Utils } from "../lib/utils";
 
+import type { Sprite } from "../interfaces/sprite.interface";
 import { Render } from "./render";
 
 export class StateService {
@@ -118,8 +119,12 @@ export class StateService {
 	public update(
 		dt: number,
 		stateUpdater: Subject<StateUpdate>,
-	): void | StateUpdate {
-		let n, car, carW, sprite, spriteW;
+	): undefined | StateUpdate {
+		let n: number;
+		let car: Car;
+		let carW: number;
+		let sprite: Sprite;
+		let spriteW: number;
 		const playerSegment = Render.findSegment(
 			this.segments,
 			this.segmentLength,
@@ -270,19 +275,22 @@ export class StateService {
 				speed: speedPercent,
 				next5Curve: next5Curve,
 			});
-		} else {
-			return {
-				playerX: this.playerX,
-				speed: speedPercent,
-				next5Curve: next5Curve,
-			};
+			return undefined;
 		}
+		return {
+			playerX: this.playerX,
+			speed: speedPercent,
+			next5Curve: next5Curve,
+		};
 	}
 
 	//-------------------------------------------------------------------------
 
 	public updateCars(dt, playerSegment, playerW) {
-		let n, car, oldSegment, newSegment;
+		let oldSegment: Segment;
+		let newSegment: Segment;
+		let car: Car;
+		let n: number;
 		for (n = 0; n < this.cars.length; n++) {
 			car = this.cars[n];
 			oldSegment = Render.findSegment(this.segments, this.segmentLength, car.z);
@@ -292,7 +300,7 @@ export class StateService {
 			car.z = Utils.increase(car.z, dt * car.speed, this.trackLength);
 			car.percent = Utils.percentRemaining(car.z, this.segmentLength); // useful for interpolation during rendering phase
 			newSegment = Render.findSegment(this.segments, this.segmentLength, car.z);
-			if (oldSegment != newSegment) {
+			if (oldSegment !== newSegment) {
 				const index = oldSegment.cars.indexOf(car);
 				oldSegment.cars.splice(index, 1);
 				newSegment.cars.push(car);
@@ -301,9 +309,14 @@ export class StateService {
 	}
 
 	public updateCarOffset(car, carSegment, playerSegment, playerW) {
-		let i, j, dir, segment, otherCar, otherCarW;
-		const lookahead = 20,
-			carW = car.sprite.w * SPRITES.SCALE;
+		let segment: Segment;
+		let otherCar: Car;
+		let otherCarW: number;
+		let i: number;
+		let j: number;
+		let dir: number;
+		const lookahead = 20;
+		const carW = car.sprite.w * SPRITES.SCALE;
 
 		// optimization, dont bother steering around other cars when 'out of sight' of the player
 		if (carSegment.index - playerSegment.index > this.drawDistance) return 0;
@@ -341,8 +354,8 @@ export class StateService {
 
 		// if no cars ahead, but I have somehow ended up off road, then steer back on
 		if (car.offset < -0.9) return 0.1;
-		else if (car.offset > 0.9) return -0.1;
-		else return 0;
+		if (car.offset > 0.9) return -0.1;
+		return 0;
 	}
 
 	public formatTime(dt) {
@@ -350,8 +363,8 @@ export class StateService {
 		const seconds = Math.floor(dt - minutes * 60);
 		const tenths = Math.floor(10 * (dt - Math.floor(dt)));
 		if (minutes > 0)
-			return minutes + "." + (seconds < 10 ? "0" : "") + seconds + "." + tenths;
-		else return seconds + "." + tenths;
+			return `${minutes}.${seconds < 10 ? "0" : ""}${seconds}.${tenths}`;
+		return `${seconds}.${tenths}`;
 	}
 
 	public randomizeState(randomizeStartPoint?: boolean) {

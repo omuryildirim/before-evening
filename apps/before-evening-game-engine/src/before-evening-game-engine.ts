@@ -31,8 +31,7 @@ export class BeforeEveningGameEngine {
 		this.state.randomizeState(randomizeStartPoint);
 	}
 
-	private reset(options?) {
-		options = options || {};
+	private reset(options: Record<string, string> = {}) {
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 		canvas.width = this.state.width = Utils.toInt(
 			options.width,
@@ -74,7 +73,7 @@ export class BeforeEveningGameEngine {
 		this.state.resolution = this.state.height / 480;
 
 		if (
-			this.state.segments.length == 0 ||
+			this.state.segments.length === 0 ||
 			options.segmentLength ||
 			options.rumbleLength
 		)
@@ -90,18 +89,13 @@ export class BeforeEveningGameEngine {
 		});
 	}
 
-	private calculateNextFrame(
-		now: number = null,
-		last: number = Utils.timestamp(),
-		dt = 0,
-		gdt = 0,
-	) {
-		now = Utils.timestamp();
-		dt = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
-		gdt = gdt + dt;
+	private calculateNextFrame(last: number = Utils.timestamp(), gdt = 0) {
+		const now = Utils.timestamp();
+		const updatedDt = Math.min(1, (now - last) / 1000); // using requestAnimationFrame have to be able to handle large delta's caused when it 'hibernates' in a background or non-visible tab
+		let updatedGdt = gdt + updatedDt;
 
-		while (gdt > this.state.step) {
-			gdt = gdt - this.state.step;
+		while (updatedGdt > this.state.step) {
+			updatedGdt = updatedGdt - this.state.step;
 			this.state.update(this.state.step, this.stateUpdate);
 		}
 
@@ -111,10 +105,7 @@ export class BeforeEveningGameEngine {
 
 		this.state.stats.update();
 
-		last = now;
-		requestAnimationFrame(
-			this.calculateNextFrame.bind(this, now, last, dt, gdt),
-		); // requestAnimationFrame(frame, canvas);
+		requestAnimationFrame(this.calculateNextFrame.bind(this, now, updatedGdt)); // requestAnimationFrame(frame, canvas);
 	}
 
 	public simulateState(): StateUpdate {
@@ -187,7 +178,7 @@ export class BeforeEveningGameEngine {
 			speed: undefined,
 		};
 
-		actionKeys.forEach((action) => {
+		for (const action of actionKeys) {
 			switch (action) {
 				case KEY.LEFT:
 					mockState.keyLeft = true;
@@ -202,7 +193,7 @@ export class BeforeEveningGameEngine {
 					mockState.keySlower = true;
 					break;
 			}
-		});
+		}
 
 		const playerSegment = Render.findSegment(
 			this.state.segments,

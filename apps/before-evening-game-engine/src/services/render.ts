@@ -5,6 +5,7 @@ import type { Segment, SegmentColorMap } from "../interfaces/segment.interface";
 import type { Sprite } from "../interfaces/sprite.interface";
 import { Utils } from "../lib/utils";
 
+import type { Car } from "../interfaces/car.interface";
 import type { StateService } from "./state.service";
 
 export class Render {
@@ -45,12 +46,16 @@ export class Render {
 		fog: number,
 		color: SegmentColorMap,
 	) {
-		const r1 = this.rumbleWidth(w1, this.state.lanes),
-			r2 = this.rumbleWidth(w2, this.state.lanes),
-			l1 = this.laneMarkerWidth(w1, this.state.lanes),
-			l2 = this.laneMarkerWidth(w2, this.state.lanes);
+		const r1 = this.rumbleWidth(w1, this.state.lanes);
+		const r2 = this.rumbleWidth(w2, this.state.lanes);
+		const l1 = this.laneMarkerWidth(w1, this.state.lanes);
+		const l2 = this.laneMarkerWidth(w2, this.state.lanes);
 
-		let lanew1, lanew2, lanex1, lanex2, lane;
+		let lanew1: number;
+		let lanew2: number;
+		let lanex1: number;
+		let lanex2: number;
+		let lane: number;
 
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 		const ctx = canvas.getContext("2d");
@@ -120,19 +125,16 @@ export class Render {
 	//---------------------------------------------------------------------------
 
 	background(layer: Sprite, rotation: number, offset: number) {
-		rotation = rotation || 0;
-		offset = offset || 0;
-
 		const imageW = layer.w / 2;
 		const imageH = layer.h;
 
-		const sourceX = layer.x + Math.floor(layer.w * rotation);
+		const sourceX = layer.x + Math.floor(layer.w * rotation || 0);
 		const sourceY = layer.y;
 		const sourceW = Math.min(imageW, layer.x + layer.w - sourceX);
 		const sourceH = imageH;
 
 		const destX = 0;
-		const destY = offset;
+		const destY = offset || 0;
 		const destW = Math.floor(this.state.width * (sourceW / imageW));
 		const destH = this.state.height;
 
@@ -184,10 +186,10 @@ export class Render {
 			((sprite.h * scale * this.state.width) / 2) *
 			(SPRITES.SCALE * this.state.roadWidth);
 
-		destX = destX + destW * (offsetX || 0);
-		destY = destY + destH * (offsetY || 0);
+		const updatedDestX = destX + destW * (offsetX || 0);
+		const updatedDestY = destY + destH * (offsetY || 0);
 
-		const clipH = clipY ? Math.max(0, destY + destH - clipY) : 0;
+		const clipH = clipY ? Math.max(0, updatedDestY + destH - clipY) : 0;
 
 		if (clipH < destH) {
 			const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -198,8 +200,8 @@ export class Render {
 				sprite.y,
 				sprite.w,
 				sprite.h - (sprite.h * clipH) / destH,
-				destX,
-				destY,
+				updatedDestX,
+				updatedDestY,
 				destW,
 				destH - clipH,
 			);
@@ -222,7 +224,7 @@ export class Render {
 			speedPercent *
 			this.state.resolution *
 			Utils.randomChoice([-1, 1]);
-		let sprite;
+		let sprite: Sprite;
 		if (steer < 0)
 			sprite = updown > 0 ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
 		else if (steer > 0)
@@ -306,7 +308,14 @@ export class Render {
 			this.state.resolution * this.state.treeSpeed * playerY,
 		);
 
-		let n, i, car, segment, sprite, spriteScale, spriteX, spriteY;
+		let n: number;
+		let i: number;
+		let car: Car;
+		let segment: Segment;
+		let sprite: Sprite;
+		let spriteScale: number;
+		let spriteX: number;
+		let spriteY: number;
 
 		for (n = 0; n < this.state.drawDistance; n++) {
 			segment =
@@ -426,7 +435,7 @@ export class Render {
 				);
 			}
 
-			if (segment == playerSegment) {
+			if (segment === playerSegment) {
 				this.player(
 					this.state.speed / this.state.maxSpeed,
 					this.state.cameraDepth / this.state.playerZ,

@@ -3,14 +3,14 @@ export const Utils = {
 	toInt: (obj, def) => {
 		if (obj !== null) {
 			const x = Number.parseInt(obj, 10);
-			if (!isNaN(x)) return x;
+			if (!Number.isNaN(x)) return x;
 		}
 		return Utils.toInt(def, 0);
 	},
 	toFloat: (obj, def?) => {
 		if (obj !== null) {
 			const x = Number.parseFloat(obj);
-			if (!isNaN(x)) return x;
+			if (!Number.isNaN(x)) return x;
 		}
 		return Utils.toFloat(def, 0.0);
 	},
@@ -21,12 +21,12 @@ export const Utils = {
 	percentRemaining: (n, total) => (n % total) / total,
 	accelerate: (v, accel, dt) => v + accel * dt,
 	interpolate: (a, b, percent) => a + (b - a) * percent,
-	easeIn: (a, b, percent) => a + (b - a) * Math.pow(percent, 2),
-	easeOut: (a, b, percent) => a + (b - a) * (1 - Math.pow(1 - percent, 2)),
+	easeIn: (a, b, percent) => a + (b - a) * percent ** 2,
+	easeOut: (a, b, percent) => a + (b - a) * (1 - (1 - percent ** 2)),
 	easeInOut: (a, b, percent) =>
 		a + (b - a) * (-Math.cos(percent * Math.PI) / 2 + 0.5),
 	exponentialFog: (distance, density) =>
-		1 / Math.pow(Math.E, distance * distance * density),
+		1 / Math.E ** (distance * distance * density),
 
 	increase: (start, increment, max) => {
 		// with looping

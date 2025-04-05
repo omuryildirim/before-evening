@@ -5,4 +5,5 @@ export interface Car {
 	z: number;
 	sprite: Sprite;
 	speed: number;
+	percent?: number;
 }

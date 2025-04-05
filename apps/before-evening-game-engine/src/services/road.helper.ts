@@ -1,9 +1,14 @@
 import { COLORS } from "../constants/colors.constant";
 import { SPRITES } from "../constants/sprites.constants";
-import type { CameraAxis, PlayerScreen } from "../interfaces/segment.interface";
+import type {
+	CameraAxis,
+	PlayerScreen,
+	Segment,
+} from "../interfaces/segment.interface";
 import type { Sprite } from "../interfaces/sprite.interface";
 import { Utils } from "../lib/utils";
 
+import type { Car } from "../interfaces/car.interface";
 import { Render } from "./render";
 import type { StateService } from "./state.service";
 
@@ -17,7 +22,7 @@ export class RoadHelper {
 	constructor(private state: StateService) {}
 
 	private lastY() {
-		return this.state.segments.length == 0
+		return this.state.segments.length === 0
 			? 0
 			: this.state.segments[this.state.segments.length - 1].p2.world.y;
 	}
@@ -38,7 +43,7 @@ export class RoadHelper {
 			},
 			curve: curve,
 			sprites: [],
-			cars: [],
+			cars: [] as Car[],
 			color:
 				Math.floor(n / this.state.rumbleLength) % 2
 					? COLORS.DARK
@@ -59,7 +64,7 @@ export class RoadHelper {
 	) {
 		const startY = this.lastY();
 		const endY = startY + Utils.toInt(y, 0) * this.state.segmentLength;
-		let n;
+		let n: number;
 		const total = enter + hold + leave;
 
 		for (n = 0; n < enter; n++) {
@@ -83,32 +88,44 @@ export class RoadHelper {
 	}
 
 	private addStraight(num: number) {
-		num = num || ROAD.LENGTH.MEDIUM;
-		this.addRoad(num, num, num, 0, 0);
+		const roadLength = num || ROAD.LENGTH.MEDIUM;
+		this.addRoad(roadLength, roadLength, roadLength, 0, 0);
 	}
 
 	private addHill(num: number, height: number) {
-		num = num || ROAD.LENGTH.MEDIUM;
-		height = height || ROAD.HILL.MEDIUM;
-		this.addRoad(num, num, num, 0, height);
+		const roadLength = num || ROAD.LENGTH.MEDIUM;
+		const roadHeight = height || ROAD.HILL.MEDIUM;
+		this.addRoad(roadLength, roadLength, roadLength, 0, roadHeight);
 	}
 
 	private addCurve(num: number, curve: number, height: number) {
-		num = num || ROAD.LENGTH.MEDIUM;
-		curve = curve || ROAD.CURVE.MEDIUM;
-		height = height || ROAD.HILL.NONE;
-		this.addRoad(num, num, num, curve, height);
+		const roadCurve = curve || ROAD.CURVE.MEDIUM;
+		const roadLength = num || ROAD.LENGTH.MEDIUM;
+		const roadHeight = height || ROAD.HILL.NONE;
+		this.addRoad(roadLength, roadLength, roadLength, roadCurve, roadHeight);
 	}
 
 	private addLowRollingHills(num: number, height: number) {
-		num = num || ROAD.LENGTH.SHORT;
-		height = height || ROAD.HILL.LOW;
-		this.addRoad(num, num, num, 0, height / 2);
-		this.addRoad(num, num, num, 0, -height);
-		this.addRoad(num, num, num, ROAD.CURVE.EASY, height);
-		this.addRoad(num, num, num, 0, 0);
-		this.addRoad(num, num, num, -ROAD.CURVE.EASY, height / 2);
-		this.addRoad(num, num, num, 0, 0);
+		const roadLength = num || ROAD.LENGTH.MEDIUM;
+		const roadHeight = height || ROAD.HILL.LOW;
+		this.addRoad(roadLength, roadLength, roadLength, 0, roadHeight / 2);
+		this.addRoad(roadLength, roadLength, roadLength, 0, -roadHeight);
+		this.addRoad(
+			roadLength,
+			roadLength,
+			roadLength,
+			ROAD.CURVE.EASY,
+			roadHeight,
+		);
+		this.addRoad(roadLength, roadLength, roadLength, 0, 0);
+		this.addRoad(
+			roadLength,
+			roadLength,
+			roadLength,
+			-ROAD.CURVE.EASY,
+			roadHeight / 2,
+		);
+		this.addRoad(roadLength, roadLength, roadLength, 0, 0);
 	}
 
 	private addSCurves() {
@@ -161,11 +178,11 @@ export class RoadHelper {
 	}
 
 	private addDownhillToEnd(num: number) {
-		num = num || 200;
+		const roadLength = num || 200;
 		this.addRoad(
-			num,
-			num,
-			num,
+			roadLength,
+			roadLength,
+			roadLength,
 			-ROAD.CURVE.EASY,
 			-this.lastY() / this.state.segmentLength,
 		);
@@ -239,8 +256,8 @@ export class RoadHelper {
 	}
 
 	private resetSprites() {
-		return;
-		let n, i;
+		let n: number;
+		let i: number;
 
 		this.addSprite(20, SPRITES.BILLBOARD07, -1);
 		this.addSprite(40, SPRITES.BILLBOARD06, -1);
@@ -284,7 +301,9 @@ export class RoadHelper {
 			);
 		}
 
-		let side, sprite, offset;
+		let side: number;
+		let sprite: Sprite;
+		let offset: number;
 		for (n = 1000; n < this.state.segments.length - 50; n += 100) {
 			side = Utils.randomChoice([1, -1]);
 			this.addSprite(
@@ -302,7 +321,12 @@ export class RoadHelper {
 
 	private resetCars() {
 		this.state.cars = [];
-		let car, segment, offset, z, sprite, speed;
+		let segment: Segment;
+		let car: Car;
+		let offset: number;
+		let sprite: Sprite;
+		let speed: number;
+		let z: number;
 		for (let n = 0; n < this.state.totalCars; n++) {
 			offset = Math.random() * Utils.randomChoice([-0.8, 0.8]);
 			z =
@@ -312,7 +336,7 @@ export class RoadHelper {
 			speed =
 				this.state.maxSpeed / 4 +
 				(Math.random() * this.state.maxSpeed) /
-					(sprite == SPRITES.SEMI ? 4 : 2);
+					(sprite === SPRITES.SEMI ? 4 : 2);
 			car = { offset: offset, z: z, sprite: sprite, speed: speed };
 			segment = Render.findSegment(
 				this.state.segments,

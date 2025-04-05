@@ -13,7 +13,8 @@ export const addSprite = (
 };
 
 export const resetSprites = (segments: Segment[]) => {
-	let n, i;
+	let n: number;
+	let i: number;
 
 	addSprite(segments, 20, SPRITES.BILLBOARD07, -1);
 	addSprite(segments, 40, SPRITES.BILLBOARD06, -1);
@@ -60,7 +61,9 @@ export const resetSprites = (segments: Segment[]) => {
 		);
 	}
 
-	let side, sprite, offset;
+	let side: number;
+	let sprite: Sprite;
+	let offset: number;
 	for (n = 1000; n < segments.length - 50; n += 100) {
 		side = Utils.randomChoice([1, -1]);
 		addSprite(

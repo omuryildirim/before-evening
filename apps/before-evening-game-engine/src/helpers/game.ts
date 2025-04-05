@@ -8,14 +8,14 @@ export const Game = {
 		let count = names.length;
 
 		const onload = () => {
-			if (--count == 0) callback(result);
+			if (--count === 0) callback(result);
 		};
 
 		for (let n = 0; n < names.length; n++) {
 			const name = names[n];
 			result[n] = document.createElement("img");
 			result[n].addEventListener("load", onload);
-			result[n].src = "images/" + name + ".png";
+			result[n].src = `images/${name}.png`;
 		}
 	},
 

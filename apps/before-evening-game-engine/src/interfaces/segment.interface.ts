@@ -1,3 +1,4 @@
+import type { Car } from "./car.interface";
 import type { Sprite } from "./sprite.interface";
 
 export interface Segment {
@@ -7,7 +8,10 @@ export interface Segment {
 	curve: number;
 	color: SegmentColorMap;
 	sprites: { source: Sprite; offset: number }[];
-	cars: [];
+	cars: Car[];
+	fog?: number;
+	looped?: boolean;
+	clip?: number;
 }
 
 export interface SegmentColorMap {
