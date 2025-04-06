@@ -12,7 +12,7 @@ import { StateService } from "./services/state.service";
 export * from "./helpers/sprites";
 
 export class BeforeEveningGameEngine {
-	private state: StateService;
+	private readonly state: StateService;
 	private roadHelper: RoadHelper;
 	private readonly renderService: Render;
 	public stateUpdate: Subject<StateUpdate>;

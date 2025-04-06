@@ -12,13 +12,8 @@ interface Params {
 const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
 	const [currentState, setCurrentState] = useState<StateUpdate | undefined>();
 	const [doNotRenderStats, _setDoNotRenderStats] = useState(true);
-	const [skipRender, setSkipRender] = useState(false);
 
 	useEffect(() => {
-		const stateUpdaterIndex = gameStateService.addStateUpdater(
-			(state: StateUpdate) =>
-				gameStateService.beforeEvening.stateUpdate.next(state),
-		);
 		const width = (leftSideRef.current?.clientWidth || 0) * 0.6;
 		gameStateService.beforeEvening.runGame({
 			width: width.toString(),
@@ -28,7 +23,7 @@ const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
 		const stateSubscription =
 			gameStateService.beforeEvening.stateUpdate.subscribe((state) => {
 				setCurrentState(state);
-				// gameStateService.updateState(state);
+				gameStateService.updateState(state);
 			});
 
 		const refreshGameUpdaterIndex = gameStateService.addRefreshGameUpdater(
@@ -40,16 +35,8 @@ const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
 		return () => {
 			stateSubscription.unsubscribe();
 			gameStateService.removeRefreshGameUpdater(refreshGameUpdaterIndex);
-			gameStateService.removeStateUpdater(stateUpdaterIndex);
 		};
 	}, [doNotRenderStats]);
-
-	const toggleSkipRender = () => {
-		if (gameStateService.beforeEvening) {
-			gameStateService.beforeEvening.toggleSkipRender(skipRender);
-			setSkipRender(!skipRender);
-		}
-	};
 
 	return (
 		<div className="car-game-container">
@@ -210,7 +197,7 @@ const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
 				</canvas>
 			</div>
 
-			{currentState && !skipRender && !doNotRenderStats && (
+			{currentState && !doNotRenderStats && (
 				<div className="current-state">
 					<div>{currentState.playerX}</div>
 					<div>{currentState.next5Curve}</div>

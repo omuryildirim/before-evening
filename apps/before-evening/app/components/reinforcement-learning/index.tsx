@@ -4,7 +4,7 @@ import {
 	trainModelForNumberOfGames,
 } from "@before-evening/shared";
 import * as tf from "@tensorflow/tfjs";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type GameStateService from "~/components/GameStateService";
 import {
 	LOCAL_STORAGE_MODEL_PATH,
@@ -26,7 +26,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 	const [maxStepsPerGame, setMaxStepsPerGame] = useState(3000);
 	const [gamesPerIteration, setGamesPerIteration] = useState(100);
 	const [discountRate, setDiscountRate] = useState(0.95);
-	const [learningRate, setLearningRate] = useState(1);
+	const [learningRate, setLearningRate] = useState(0.7);
 	const [numberOfIterations, setNumberOfIterations] = useState("50");
 	const [minEpsilon, setMinEpsilon] = useState(0.5);
 	const [maxEpsilon, setMaxEpsilon] = useState(0.8);
@@ -40,7 +40,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 		testButton: true,
 	});
 	const [trainButtonText, setTrainButtonText] = useState("Train");
-	const [_stopRequested, setStopRequested] = useState(false);
+	const [stopRequested, setStopRequested] = useState(false);
 	const [iterationStatus, setIterationStatus] = useState("");
 	const [iterationProgress, setIterationProgress] = useState(0);
 	const [gameStatus, setGameStatus] = useState("");
@@ -51,56 +51,38 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 	]);
 	const [testState, setTestState] = useState(false);
 	const [_localStorageModel, setLocalStorageModel] = useState(false);
-	const [modelSavePath, setModelSavePath] = useState(MODEL_SAVE_PATH);
+	const [modelSavePath, setModelSavePath] = useState("");
 	const [trainingProgress, setTrainingProgress] = useState("");
 
-	useEffect(() => {
-		const initializeView = async () => {
-			const localStorageModelExists =
-				await SaveablePolicyNetwork.checkStoredModelStatus(
-					LOCAL_STORAGE_MODEL_PATH,
-				);
-			if (localStorageModelExists) {
-				setModelNames((prevModelNames) => [
-					...prevModelNames,
-					{ key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName },
-				]);
-				setLocalStorageModel(true);
-			}
-			setModelSavePath(
-				localStorageModelExists ? LOCAL_STORAGE_MODEL_PATH : MODEL_SAVE_PATH,
+	const initializeView = useCallback(async () => {
+		const localStorageModelExists =
+			await SaveablePolicyNetwork.checkStoredModelStatus(
+				LOCAL_STORAGE_MODEL_PATH,
 			);
-		};
-		initializeView();
+		if (localStorageModelExists) {
+			setModelNames((prevModelNames) => [
+				prevModelNames[0],
+				{ key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName },
+			]);
+			setLocalStorageModel(true);
+		}
+		setDisabledStatus({
+			...disabledStatus,
+			deleteStoredModelButton: !localStorageModelExists,
+			createModelButton: !!localStorageModelExists,
+		});
+		setModelSavePath(
+			localStorageModelExists ? LOCAL_STORAGE_MODEL_PATH : MODEL_SAVE_PATH,
+		);
 	}, []);
 
 	useEffect(() => {
-		const loadModel = async () => {
-			const loadedPolicyNet = await SaveablePolicyNetwork.loadModel(
-				maxStepsPerGame,
-				modelSavePath,
-				true,
-			);
-			setPolicyNet(loadedPolicyNet);
-			setHiddenLayerSize(loadedPolicyNet.hiddenLayerSizes() as number);
-			updateUIControlState(loadedPolicyNet);
-		};
-		if (modelSavePath) {
-			loadModel().then();
-		}
-	}, [modelSavePath]);
+		initializeView().then();
+	}, [initializeView]);
 
-	const updateUIControlState = (
-		policyNet: SaveablePolicyNetwork | undefined,
-	) => {
-		if (!policyNet) {
-			setStoredModelStatus("No stored model.");
-			setDisabledStatus((prevStatus) => ({
-				...prevStatus,
-				deleteStoredModelButton: true,
-			}));
-		} else {
-			const isLocalStorageModel = modelSavePath !== MODEL_SAVE_PATH;
+	const processModelDetails = useCallback(
+		(modelName: string) => {
+			const isLocalStorageModel = modelName !== MODEL_SAVE_PATH;
 			setLocalStorageModel(isLocalStorageModel);
 			setStoredModelStatus(
 				isLocalStorageModel ? localStorageModelName : preTrainedModelName,
@@ -109,34 +91,66 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				...disabledStatus,
 				deleteStoredModelButton: !isLocalStorageModel,
 				createModelButton: isLocalStorageModel,
-				hiddenLayerSizesInput: !!policyNet,
-				trainButton: !policyNet || !isLocalStorageModel,
-				testButton: !policyNet,
+				hiddenLayerSizesInput: isLocalStorageModel,
+				trainButton: !isLocalStorageModel,
+				testButton: false,
 			});
-		}
-	};
+		},
+		[
+			setLocalStorageModel,
+			setStoredModelStatus,
+			setDisabledStatus,
+			disabledStatus,
+		],
+	);
 
-	const createModel = async () => {
+	const loadModel = useCallback(async () => {
+		const loadedPolicyNet = await SaveablePolicyNetwork.loadModel(
+			maxStepsPerGame,
+			modelSavePath,
+			true,
+		);
+		setPolicyNet(loadedPolicyNet);
+		setHiddenLayerSize(loadedPolicyNet.hiddenLayerSizes() as number);
+		processModelDetails(modelSavePath);
+	}, [maxStepsPerGame, modelSavePath]);
+
+	useEffect(() => {
+		if (modelSavePath) {
+			loadModel().then();
+		}
+	}, [modelSavePath]);
+
+	const createModel = useCallback(async () => {
 		try {
-			setModelSavePath(LOCAL_STORAGE_MODEL_PATH);
 			const newPolicyNet = new SaveablePolicyNetwork({
 				hiddenLayerSizesOrModel: hiddenLayerSize,
 				maxStepsPerGame: maxStepsPerGame,
-				modelName: modelSavePath,
+				modelName: LOCAL_STORAGE_MODEL_PATH,
 			});
 			await newPolicyNet.saveModel();
+			setModelSavePath(LOCAL_STORAGE_MODEL_PATH);
 			setPolicyNet(newPolicyNet);
-			updateUIControlState(newPolicyNet);
+			setLocalStorageModel(true);
+			setStoredModelStatus(localStorageModelName);
+			setDisabledStatus({
+				...disabledStatus,
+				deleteStoredModelButton: false,
+				createModelButton: true,
+				hiddenLayerSizesInput: !!policyNet,
+				trainButton: false,
+				testButton: false,
+			});
 			setModelNames((prevModelNames) => [
-				...prevModelNames,
+				prevModelNames[0],
 				{ key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName },
 			]);
 		} catch (err) {
 			console.error(`ERROR: ${(err as Error).message}`);
 		}
-	};
+	}, [hiddenLayerSize, maxStepsPerGame, modelSavePath]);
 
-	const deleteStoredModel = async () => {
+	const deleteStoredModel = useCallback(async () => {
 		if (
 			window.confirm(
 				"Are you sure you want to delete the locally-stored model?",
@@ -150,11 +164,15 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				),
 			);
 			setModelSavePath(MODEL_SAVE_PATH);
-			updateUIControlState(undefined);
+			setStoredModelStatus("No stored model.");
+			setDisabledStatus((prevStatus) => ({
+				...prevStatus,
+				deleteStoredModelButton: true,
+			}));
 		}
-	};
+	}, [policyNet]);
 
-	const train = async () => {
+	const train = useCallback(async () => {
 		if (trainButtonText === "Stop") {
 			setStopRequested(true);
 		} else {
@@ -178,7 +196,12 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 
 			for (let i = 0; i < trainIterations; ++i) {
 				if (renderDuringTraining) {
-					await trainV2();
+					await trainAndRender();
+					if (stopRequested) {
+						setStopRequested(false);
+						setTrainButtonText("Train");
+						break;
+					}
 				} else if (policyNet) {
 					await trainModelForNumberOfGames({
 						maxEpsilon: maxEpsilon,
@@ -195,58 +218,88 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				onIterationEnd(i + 1, trainIterations);
 				await tf.nextFrame(); // Unblock UI thread.
 				await policyNet?.saveModel();
-				updateUIControlState(policyNet);
+				processModelDetails(modelSavePath);
 			}
 
 			enableModelControls();
 		}
-	};
+	}, [
+		trainButtonText,
+		numberOfIterations,
+		gamesPerIteration,
+		maxStepsPerGame,
+		discountRate,
+		learningRate,
+		renderDuringTraining,
+		policyNet,
+	]);
 
-	const test = () => {
+	const test = useCallback(() => {
 		setTestState(!testState);
-		if (testState) {
-			testV2();
+		if (!testState) {
+			if (!policyNet) return;
+			const memory = new Memory(maxStepsPerGame);
+			const orchestrator = new Orchestrator(
+				policyNet,
+				memory,
+				0,
+				0,
+				0,
+				gameStateService,
+				maxEpsilon,
+				minEpsilon,
+				lambda,
+				setTrainingProgress,
+			);
+			orchestrator.test();
 		} else {
 			gameStateService.stopTest();
 		}
-	};
+	}, [testState, policyNet]);
 
-	const disableModelControls = () => {
+	const disableModelControls = useCallback(() => {
 		setTrainButtonText("Stop");
 		setDisabledStatus((prevStatus) => ({
 			...prevStatus,
 			testButton: true,
 			deleteStoredModelButton: true,
 		}));
-	};
+	}, []);
 
-	const enableModelControls = () => {
+	const enableModelControls = useCallback(() => {
 		setTrainButtonText("Train");
 		setDisabledStatus((prevStatus) => ({
 			...prevStatus,
 			testButton: false,
 			deleteStoredModelButton: false,
 		}));
-	};
+	}, []);
 
-	const onIterationEnd = (iterationCount: number, totalIterations: number) => {
-		setIterationStatus(`Iteration ${iterationCount} of ${totalIterations}`);
-		setIterationProgress((iterationCount / totalIterations) * 100);
-	};
+	const onIterationEnd = useCallback(
+		(iterationCount: number, totalIterations: number) => {
+			setIterationStatus(`Iteration ${iterationCount} of ${totalIterations}`);
+			setIterationProgress((iterationCount / totalIterations) * 100);
+		},
+		[],
+	);
 
-	const onGameEnd = (gameCount: number, totalGames: number) => {
+	const onGameEnd = useCallback((gameCount: number, totalGames: number) => {
 		setGameStatus(`Game ${gameCount} of ${totalGames}`);
 		setGameProgress((gameCount / totalGames) * 100);
 		if (gameCount === totalGames) {
 			setGameStatus("Updating weights...");
 		}
-	};
+	}, []);
 
-	const trainV2 = async () => {
+	const trainAndRender = useCallback(async () => {
 		onGameEnd(0, gamesPerIteration);
 		if (policyNet) {
 			let memory = new Memory(maxStepsPerGame);
 			for (let i = 0; i < gamesPerIteration; ++i) {
+				if (stopRequested) {
+					break;
+				}
+
 				gameStateService.refreshGame();
 				const orchestrator = new Orchestrator(
 					policyNet,
@@ -265,25 +318,24 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				memory = new Memory(maxStepsPerGame);
 			}
 		}
-	};
+	}, [
+		gamesPerIteration,
+		policyNet,
+		discountRate,
+		learningRate,
+		maxStepsPerGame,
+		gameStateService,
+		maxEpsilon,
+		minEpsilon,
+		lambda,
+	]);
 
-	const testV2 = () => {
-		if (!policyNet) return;
-		const memory = new Memory(maxStepsPerGame);
-		const orchestrator = new Orchestrator(
-			policyNet,
-			memory,
-			0,
-			0,
-			0,
-			gameStateService,
-			maxEpsilon,
-			minEpsilon,
-			lambda,
-			setTrainingProgress,
-		);
-		orchestrator.test();
-	};
+	const toggleSkipRender = useCallback(() => {
+		if (gameStateService.beforeEvening) {
+			gameStateService.beforeEvening.toggleSkipRender(renderDuringTraining);
+			setRenderDuringTraining(!renderDuringTraining);
+		}
+	}, [renderDuringTraining, gameStateService]);
 
 	return (
 		<div className="tfjs-example-container centered-container">
@@ -336,6 +388,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 						<div>
 							<select
 								value={modelSavePath}
+								className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
 								onChange={(e) => setModelSavePath(e.target.value)}
 							>
 								{modelNames.map((model) => (
@@ -354,10 +407,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 						<div className="with-rows init-model">
 							<div className="input-div with-rows">
 								<label htmlFor="hiddenLayerSize" className="input-label">
-									Hidden layer size(s) (e.g.: "256", "32,64"):
+									Hidden layer size(s) (e.g.: "256", "64"):
 								</label>
 								<input
 									id="hiddenLayerSize"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={hiddenLayerSize}
 									onChange={(e) => setHiddenLayerSize(e.target.valueAsNumber)}
 									disabled={disabledStatus.hiddenLayerSizesInput}
@@ -368,17 +422,23 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								onClick={createModel}
 								disabled={disabledStatus.createModelButton}
 								type="button"
+								className={
+									disabledStatus.createModelButton
+										? "bg-gray-600 disabled"
+										: "cursor-pointer bg-green-600 hover:bg-green-700 text-white py-2 px-4"
+								}
 							>
-								Create model
+								Create new model
 							</button>
 						</div>
 						<div className="with-rows init-model">
 							<div className="input-div with-rows">
 								<label htmlFor="storedModelStatus" className="input-label">
-									Model
+									Model:
 								</label>
 								<input
 									id="storedModelStatus"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={storedModelStatus}
 									disabled
 									readOnly
@@ -386,6 +446,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 							</div>
 							<button
 								onClick={deleteStoredModel}
+								className={
+									disabledStatus.deleteStoredModelButton
+										? "bg-gray-600 disabled"
+										: "cursor-pointer bg-red-600 hover:bg-red-700 text-white py-2 px-4"
+								}
 								disabled={disabledStatus.deleteStoredModelButton}
 								type="button"
 							>
@@ -402,6 +467,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 							</label>
 							<input
 								id="numberOfIterations"
+								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 								value={numberOfIterations}
 								onChange={(e) => setNumberOfIterations(e.target.value)}
 							/>
@@ -412,6 +478,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 							</label>
 							<input
 								id="gamesPerIteration"
+								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 								value={gamesPerIteration}
 								onChange={(e) => setGamesPerIteration(e.target.valueAsNumber)}
 								type="number"
@@ -423,6 +490,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 							</label>
 							<input
 								id="maxStepsPerGame"
+								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 								value={maxStepsPerGame}
 								onChange={(e) => setMaxStepsPerGame(e.target.valueAsNumber)}
 								type="number"
@@ -435,6 +503,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								</label>
 								<input
 									id="learningRate"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={learningRate}
 									onChange={(e) => setLearningRate(e.target.valueAsNumber)}
 									type="number"
@@ -446,6 +515,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								</label>
 								<input
 									id="discountRate"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={discountRate}
 									onChange={(e) => setDiscountRate(e.target.valueAsNumber)}
 									type="number"
@@ -463,6 +533,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								</label>
 								<input
 									id="minEpsilon"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={minEpsilon}
 									onChange={(e) => setMinEpsilon(e.target.valueAsNumber)}
 									type="number"
@@ -478,6 +549,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								</label>
 								<input
 									id="maxEpsilon"
+									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
 									value={maxEpsilon}
 									onChange={(e) => setMaxEpsilon(e.target.valueAsNumber)}
 									type="number"
@@ -492,7 +564,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								id="renderDuringTraining"
 								type="checkbox"
 								checked={renderDuringTraining}
-								onChange={(e) => setRenderDuringTraining(e.target.checked)}
+								onChange={() => toggleSkipRender()}
 							/>
 							<span className="note">
 								{trainingProgress || "Uncheck me to speed up training"}
@@ -504,6 +576,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								onClick={train}
 								disabled={disabledStatus.trainButton}
 								type="button"
+								className={
+									disabledStatus.trainButton
+										? "bg-gray-600 disabled"
+										: "cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4"
+								}
 							>
 								{trainButtonText}
 							</button>
@@ -511,6 +588,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 								onClick={test}
 								disabled={disabledStatus.testButton}
 								type="button"
+								className={
+									disabledStatus.testButton
+										? "bg-gray-600 disabled"
+										: "cursor-pointer bg-blue-700 hover:bg-blue-800 text-white py-2 px-4"
+								}
 							>
 								Test
 							</button>

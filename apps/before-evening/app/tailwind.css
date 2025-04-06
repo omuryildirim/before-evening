@@ -170,6 +170,7 @@ body {
 		.with-cols {
 			display: flex;
 			flex-direction: row;
+			gap: 5px;
 		}
 		.with-cols > * {
 			flex: 1 1 0;

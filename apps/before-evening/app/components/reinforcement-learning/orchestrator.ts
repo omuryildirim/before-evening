@@ -169,9 +169,17 @@ export class Orchestrator {
 
 	public test() {
 		this.gameStateService.refreshGame();
-		this.gameStateService.addStateUpdater((rawState) => {
-			const state = ReinforcementLearningModel.getState(rawState);
-			this.takePredictedAction(state);
+		const stateUpdaterIndex = this.gameStateService.addStateUpdater(
+			(rawState) => {
+				const state = ReinforcementLearningModel.getState(rawState);
+				this.takePredictedAction(state);
+			},
+		);
+		this.gameStateService.addRefreshGameUpdater(() => {
+			this.gameStateService.removeStateUpdater(stateUpdaterIndex);
+		});
+		this.gameStateService.addStopTestUpdater(() => {
+			this.gameStateService.removeStateUpdater(stateUpdaterIndex);
 		});
 	}
 }
