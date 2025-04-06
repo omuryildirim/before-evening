@@ -1,49 +1,43 @@
 {
-  "name": "@before-evening/frontend",
-  "version": "0.1.0",
+  "name": "before-evening-fe",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
+    "build": "remix vite:build",
+    "deploy": "wrangler pages deploy ./build/client",
+    "dev": "remix vite:dev",
     "lint": "biome check ./app",
     "lint:fix": "biome check --write ./app",
-    "e2e": "ng e2e"
+    "start": "wrangler pages dev ./build/client",
+    "typecheck": "tsc",
+    "typegen": "wrangler types"
   },
-  "private": true,
   "dependencies": {
-    "@angular/animations": "~8.2.13",
-    "@angular/common": "~8.2.13",
-    "@angular/compiler": "~8.2.13",
-    "@angular/core": "~8.2.13",
-    "@angular/forms": "~8.2.13",
-    "@angular/platform-browser": "~8.2.13",
-    "@angular/platform-browser-dynamic": "~8.2.13",
-    "@angular/router": "~8.2.13",
-    "@tensorflow/tfjs": "2.4.0",
+    "@remix-run/cloudflare": "2.16.4",
+    "@remix-run/cloudflare-pages": "2.16.4",
+    "@remix-run/react": "2.16.4",
     "@before-evening/game-engine": "workspace:*",
-    "rxjs": "^6.4.0",
     "@before-evening/shared": "workspace:*",
-    "tslib": "^1.10.0",
-    "zone.js": "~0.9.1"
+    "isbot": "4.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.803.17",
-    "@angular/cli": "8.3.22",
-    "@angular/compiler-cli": "~8.2.13",
-    "@angular/language-service": "~8.2.13",
-    "@types/jasmine": "~3.3.8",
-    "@types/jasminewd2": "~2.0.3",
-    "@types/node": "~8.9.4",
-    "codelyzer": "^5.0.0",
-    "jasmine-core": "~3.4.0",
-    "jasmine-spec-reporter": "~4.2.1",
-    "karma": "^6.3.19",
-    "karma-chrome-launcher": "~2.2.0",
-    "karma-coverage-istanbul-reporter": "~2.0.1",
-    "karma-jasmine": "~2.0.1",
-    "karma-jasmine-html-reporter": "^1.4.0",
-    "protractor": "~5.4.0"
+    "@cloudflare/workers-types": "4.20240512.0",
+    "@remix-run/dev": "2.16.4",
+    "@types/react": "18.3.20",
+    "@types/react-dom": "18.3.6",
+    "autoprefixer": "10.4.19",
+    "postcss": "8.4.38",
+    "tailwindcss": "3.4.4",
+    "typescript": "5.1.6",
+    "vite": "6.0.0",
+    "vite-tsconfig-paths": "4.2.1",
+    "wrangler": "3.57.1"
   },
-  "packageManager": "pnpm@10.4.1"
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }
