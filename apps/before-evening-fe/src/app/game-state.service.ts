@@ -55,14 +55,14 @@ export class GameStateService {
     if (this.previousActions) {
       for (const key of this.previousActions) {
         document.dispatchEvent(
-          new KeyboardEvent('keyup', { keyCode: key } as any)
+          new KeyboardEvent('keyup', { keyCode: key })
         );
       }
     }
 
     for (const key of keyList) {
       document.dispatchEvent(
-        new KeyboardEvent('keydown', { keyCode: key } as any)
+        new KeyboardEvent('keydown', { keyCode: key })
       );
     }
 

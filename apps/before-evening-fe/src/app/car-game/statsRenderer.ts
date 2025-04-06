@@ -99,7 +99,7 @@ export class StatsRenderer {
 
   public updateGraph(dom, value) {
     const child = dom.appendChild(dom.firstChild);
-    child.style.height = value + 'px';
+    child.style.height = `${value}px`;
   }
 
   public updateStats(
