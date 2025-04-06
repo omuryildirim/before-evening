@@ -30,12 +30,14 @@ export const Game = {
 
 	playMusic: () => {
 		const music = document.getElementById("music") as HTMLAudioElement;
-		music.loop = true;
-		music.volume = 0.05; // shhhh! annoying music!
-		music.muted = true;
-		music.play();
-		document.getElementById("mute").addEventListener("click", () => {
-			music.muted = !music.muted;
-		});
+		if (music) {
+			music.loop = true;
+			music.volume = 0.05; // shhhh! annoying music!
+			music.muted = true;
+			music.play();
+			document.getElementById("mute").addEventListener("click", () => {
+				music.muted = !music.muted;
+			});
+		}
 	},
 };

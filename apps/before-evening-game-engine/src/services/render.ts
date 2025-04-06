@@ -312,7 +312,6 @@ export class Render {
 		let i: number;
 		let car: Car;
 		let segment: Segment;
-		let sprite: Sprite;
 		let spriteScale: number;
 		let spriteX: number;
 		let spriteY: number;
@@ -383,7 +382,6 @@ export class Render {
 
 			for (i = 0; i < segment.cars.length; i++) {
 				car = segment.cars[i];
-				sprite = car.sprite;
 				spriteScale = Utils.interpolate(
 					segment.p1.screen.scale,
 					segment.p2.screen.scale,
@@ -408,28 +406,6 @@ export class Render {
 					spriteX,
 					spriteY,
 					-0.5,
-					-1,
-					segment.clip,
-				);
-			}
-
-			for (i = 0; i < segment.sprites.length; i++) {
-				sprite = segment.sprites[i];
-				spriteScale = segment.p1.screen.scale;
-				spriteX =
-					segment.p1.screen.x +
-					(spriteScale *
-						sprite.offset *
-						this.state.roadWidth *
-						this.state.width) /
-						2;
-				spriteY = segment.p1.screen.y;
-				this.sprite(
-					sprite.source,
-					spriteScale,
-					spriteX,
-					spriteY,
-					sprite.offset < 0 ? -1 : 0,
 					-1,
 					segment.clip,
 				);
