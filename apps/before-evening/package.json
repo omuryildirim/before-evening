@@ -21,7 +21,8 @@
     "@before-evening/shared": "workspace:*",
     "isbot": "4.1.0",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "4.20240512.0",

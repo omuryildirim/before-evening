@@ -1,18 +1,39 @@
 import { BeforeEveningGameEngine, KEY, StateUpdate } from '@before-evening/game-engine';
-import { ActionList } from './reinforcement-learning/reinforcement-learning.types';
+import { ActionList } from './reinforcement-learning/constants';
 
-export function useGameStateService() {
-  let stateUpdater: (state: StateUpdate) => void;
-  let refreshGame: () => void;
-  let stopTest: (stop: boolean) => void;
-  let previousActions: number[] = [];
-  let beforeEvening: BeforeEveningGameEngine;
+class GameStateService {
+  private stateUpdater: (undefined | ((state: StateUpdate) => void))[];
+  private previousActions: number[];
+  public beforeEvening: BeforeEveningGameEngine;
+  private refreshGameUpdater: (undefined | (() => void))[];
+  private stopTestUpdater: (undefined | (() => void))[];
 
-  const associateStateUpdater = (stateUpdaterInstance: (state: StateUpdate) => void) => {
-    stateUpdater = stateUpdaterInstance;
-  };
+  constructor() {
+    this.refreshGameUpdater = [];
+    this.stopTestUpdater = [];
+    this.beforeEvening = new BeforeEveningGameEngine();
+    this.previousActions = [];
+    this.stateUpdater = [];
+  }
 
-  const dispatchAnAction = (action: ActionList) => {
+  public addStateUpdater(stateUpdater: (state: StateUpdate) => void) {
+    this.stateUpdater.push(stateUpdater);
+    return this.stateUpdater.length - 1;
+  }
+
+  public removeStateUpdater(index: number) {
+    this.stateUpdater[index] = undefined;
+  }
+
+  public updateState(state: StateUpdate) {
+    for (const updater of this.stateUpdater) {
+      if (updater) {
+        updater(state);
+      }
+    }
+  }
+
+  public dispatchAnAction(action: ActionList) {
     const keyList: number[] = [];
 
     switch (action) {
@@ -42,12 +63,10 @@ export function useGameStateService() {
         break;
     }
 
-    if (previousActions) {
-      for (const key of previousActions) {
-        document.dispatchEvent(
-          new KeyboardEvent('keyup', { keyCode: key } as any)
-        );
-      }
+    for (const key of this.previousActions) {
+      document.dispatchEvent(
+        new KeyboardEvent('keyup', { keyCode: key } as any)
+      );
     }
 
     for (const key of keyList) {
@@ -58,17 +77,42 @@ export function useGameStateService() {
 
     console.log(action);
 
-    previousActions = keyList;
-  };
+    this.previousActions = keyList;
+  }
 
-  return {
-    setRefreshGameCallback: (callback: () => void) => { refreshGame = callback; },
-    setStopTestCallback: (callback: (stop: boolean) => void) => { stopTest = callback; },
-    stateUpdater,
-    refreshGame,
-    stopTest,
-    beforeEvening,
-    associateStateUpdater,
-    dispatchAnAction,
-  };
+  public addRefreshGameUpdater(refreshGameUpdater: () => void) {
+    this.refreshGameUpdater.push(refreshGameUpdater);
+    return this.refreshGameUpdater.length - 1;
+  }
+
+  public removeRefreshGameUpdater(index: number) {
+    this.refreshGameUpdater[index] = undefined;
+  }
+
+  public refreshGame() {
+    for (const updater of this.refreshGameUpdater) {
+      if (updater) {
+        updater();
+      }
+    }
+  }
+
+  public addStopTestUpdater(stopTestUpdater: () => void) {
+    this.stopTestUpdater.push(stopTestUpdater);
+    return this.stopTestUpdater.length - 1;
+  }
+
+  public removeStopTestUpdater(index: number) {
+    this.stopTestUpdater[index] = undefined;
+  }
+
+  public stopTest() {
+    for (const updater of this.stopTestUpdater) {
+      if (updater) {
+        updater();
+      }
+    }
+  }
 }
+
+export default GameStateService;

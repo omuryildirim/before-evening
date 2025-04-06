@@ -1,55 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { BeforeEveningGameEngine } from '@before-evening/game-engine';
-import { useGameStateService } from '../GameStateService';
+import GameStateService from '~/components/GameStateService';
 import Stats from './Stats';
+import { StateUpdate } from '@before-evening/game-engine';
 
-const CarGameComponent = () => {
-  const [beforeEvening, setBeforeEvening] = useState(null);
-  const [currentState, setCurrentState] = useState(null);
+interface Params {
+  gameStateService: GameStateService;
+  leftSideRef: React.RefObject<HTMLDivElement>;
+}
+
+const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
+  const [currentState, setCurrentState] = useState<StateUpdate | undefined>();
   const [doNotRenderStats, _setDoNotRenderStats] = useState(true);
   const [skipRender, setSkipRender] = useState(false);
-  const gameStateService = useGameStateService();
 
   useEffect(() => {
-    const gameEngine = new BeforeEveningGameEngine();
-    setBeforeEvening(gameEngine);
-    gameStateService.beforeEvening = gameEngine;
-
-    gameStateService.associateStateUpdater(gameEngine.stateUpdate);
-    const width = document.querySelector('.left-side').clientWidth * 0.6;
-    gameEngine.runGame({
+    const stateUpdaterIndex = gameStateService.addStateUpdater((state: StateUpdate) => gameStateService.beforeEvening.stateUpdate.next(state));
+    const width = (leftSideRef.current?.clientWidth || 0) * 0.6;
+    gameStateService.beforeEvening.runGame({
       width: width.toString(),
       height: ((width * 3) / 4).toString(),
     });
 
-    const stateSubscription = gameEngine.stateUpdate.subscribe((state) => {
+    const stateSubscription = gameStateService.beforeEvening.stateUpdate.subscribe((state) => {
       setCurrentState(state);
+      // gameStateService.updateState(state);
     });
 
-    const refreshSubscription = gameStateService.refreshGame.subscribe(() => {
-      gameEngine.resetGame();
+    const refreshGameUpdaterIndex = gameStateService.addRefreshGameUpdater(() => {
+      gameStateService.beforeEvening.resetGame();
     });
 
     return () => {
       stateSubscription.unsubscribe();
-      refreshSubscription.unsubscribe();
+      gameStateService.removeRefreshGameUpdater(refreshGameUpdaterIndex);
+      gameStateService.removeStateUpdater(stateUpdaterIndex);
     };
   }, [doNotRenderStats]);
 
   const toggleSkipRender = () => {
-    if (beforeEvening) {
-      beforeEvening.toggleSkipRender(skipRender);
+    if (gameStateService.beforeEvening) {
+      gameStateService.beforeEvening.toggleSkipRender(skipRender);
       setSkipRender(!skipRender);
     }
   };
 
   return (
-    <div>
+    <div className="car-game-container">
       {!doNotRenderStats && (
         <table id="controls">
           <tbody>
           <tr>
-            <td id="fps" colSpan="2" align="right"></td>
+            <td id="fps" colSpan={2} align="right"></td>
           </tr>
           <tr>
             <th><label htmlFor="resolution">Resolution :</label></th>
@@ -98,15 +99,15 @@ const CarGameComponent = () => {
       )}
 
       <div id="racer">
-        {beforeEvening && (
+        {gameStateService.beforeEvening && (
           <div id="hud">
-            <span id="speed" className="hud"><span id="speed_value" className="value">{beforeEvening.stats.speed}</span> km/h</span>
-            <span id="current_lap_time" className="hud">Time: <span id="current_lap_time_value" className="value">{beforeEvening.stats.currentLapTime}</span></span>
-            {beforeEvening.stats.lastLapTime && (
-              <span id="last_lap_time" className="hud">Last Lap: <span id="last_lap_time_value" className="value">{beforeEvening.stats.lastLapTime}</span></span>
+            <span id="speed" className="hud"><span id="speed_value" className="value">{gameStateService.beforeEvening.stats.speed}</span> km/h</span>
+            <span id="current_lap_time" className="hud">Time: <span id="current_lap_time_value" className="value">{gameStateService.beforeEvening.stats.currentLapTime}</span></span>
+            {gameStateService.beforeEvening.stats.lastLapTime && (
+              <span id="last_lap_time" className="hud">Last Lap: <span id="last_lap_time_value" className="value">{gameStateService.beforeEvening.stats.lastLapTime}</span></span>
             )}
-            {beforeEvening.stats.bestLapTime && (
-              <span id="fast_lap_time" className="hud">Fastest Lap: <span id="fast_lap_time_value" className="value">{beforeEvening.stats.bestLapTime}</span></span>
+            {gameStateService.beforeEvening.stats.bestLapTime && (
+              <span id="fast_lap_time" className="hud">Fastest Lap: <span id="fast_lap_time_value" className="value">{gameStateService.beforeEvening.stats.bestLapTime}</span></span>
             )}
           </div>
         )}
@@ -114,12 +115,6 @@ const CarGameComponent = () => {
           Sorry, this example cannot be run because your browser does not support the &lt;canvas&gt; element
         </canvas>
       </div>
-
-      <audio id='music'>
-        <source src="./music/racer.ogg" />
-        <source src="./music/racer.mp3" />
-      </audio>
-      <span id="mute"></span>
 
       {currentState && !skipRender && !doNotRenderStats && (
         <div className="current-state">
@@ -129,7 +124,7 @@ const CarGameComponent = () => {
         </div>
       )}
 
-      {!doNotRenderStats && <Stats stats={beforeEvening.stats} />}
+      {!doNotRenderStats && <Stats stats={gameStateService.beforeEvening.stats} />}
     </div>
   );
 };
