@@ -104,7 +104,10 @@ class PolicyNetwork {
 					? currentQ[action] +
 						(learningRate || 1) *
 							(reward +
-								discountRate * ((qsad as tf.Tensor[])[index].max().dataSync() as unknown as number) -
+								discountRate *
+									((qsad as tf.Tensor[])[index]
+										.max()
+										.dataSync() as unknown as number) -
 								currentQ[action])
 					: currentQ[action];
 				x.push(state.dataSync() as unknown as number);

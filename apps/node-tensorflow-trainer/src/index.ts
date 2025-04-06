@@ -9,7 +9,7 @@ import {
 } from "@before-evening/shared";
 
 import { MODEL_SAVE_PATH } from "./constants";
-import { SaveableNodePolicyNetwork } from './policy-network.node';
+import { SaveableNodePolicyNetwork } from "./policy-network.node";
 
 const MIN_EPSILON = 0.5;
 const MAX_EPSILON = 0.8;
