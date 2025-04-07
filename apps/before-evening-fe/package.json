@@ -19,7 +19,7 @@
     "@remix-run/react": "2.16.4",
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*",
-    "isbot": "4.1.0",
+    "isbot": "5.1.25",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "@tensorflow/tfjs": "4.22.0"
