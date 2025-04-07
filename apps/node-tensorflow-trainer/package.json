@@ -24,7 +24,7 @@
     "@before-evening/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "20.14.8"
+    "@types/node": "22.14.0"
   },
   "packageManager": "pnpm@10.4.1",
   "files": [
