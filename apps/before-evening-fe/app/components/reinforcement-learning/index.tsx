@@ -4,8 +4,11 @@ import {
 	trainModelForNumberOfGames,
 } from "@before-evening/shared";
 import * as tf from "@tensorflow/tfjs";
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type GameStateService from "~/components/GameStateService";
+import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
+import { ModelOptions } from "~/components/reinforcement-learning/ModelOptions";
+import { useModelOptions } from "~/components/reinforcement-learning/ModelOptions/useModelOptions";
 import {
 	LOCAL_STORAGE_MODEL_PATH,
 	MODEL_SAVE_PATH,
@@ -22,23 +25,10 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 	const [policyNet, setPolicyNet] = useState<
 		SaveablePolicyNetwork | undefined
 	>();
-	const [hiddenLayerSize, setHiddenLayerSize] = useState(1024);
-	const [maxStepsPerGame, setMaxStepsPerGame] = useState(3000);
-	const [gamesPerIteration, setGamesPerIteration] = useState(100);
-	const [discountRate, setDiscountRate] = useState(0.95);
-	const [learningRate, setLearningRate] = useState(0.7);
-	const [numberOfIterations, setNumberOfIterations] = useState("50");
-	const [minEpsilon, setMinEpsilon] = useState(0.5);
-	const [maxEpsilon, setMaxEpsilon] = useState(0.8);
-	const [lambda] = useState(0.01);
+
+	const modelOptions = useModelOptions();
+
 	const [storedModelStatus, setStoredModelStatus] = useState("N/A");
-	const [disabledStatus, setDisabledStatus] = useState({
-		deleteStoredModelButton: true,
-		createModelButton: false,
-		hiddenLayerSizesInput: false,
-		trainButton: true,
-		testButton: true,
-	});
 	const [trainButtonText, setTrainButtonText] = useState("Train");
 	const [stopRequested, setStopRequested] = useState(false);
 	const [iterationStatus, setIterationStatus] = useState("");
@@ -66,11 +56,9 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			]);
 			setLocalStorageModel(true);
 		}
-		setDisabledStatus({
-			...disabledStatus,
-			deleteStoredModelButton: !localStorageModelExists,
-			createModelButton: !!localStorageModelExists,
-		});
+		modelOptions.setIsDeleteStoredModelButtonDisabled(!localStorageModelExists);
+		modelOptions.setIsCreateModelButtonDisabled(!!localStorageModelExists);
+
 		setModelSavePath(
 			localStorageModelExists ? LOCAL_STORAGE_MODEL_PATH : MODEL_SAVE_PATH,
 		);
@@ -87,33 +75,36 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			setStoredModelStatus(
 				isLocalStorageModel ? localStorageModelName : preTrainedModelName,
 			);
-			setDisabledStatus({
-				...disabledStatus,
-				deleteStoredModelButton: !isLocalStorageModel,
-				createModelButton: isLocalStorageModel,
-				hiddenLayerSizesInput: isLocalStorageModel,
-				trainButton: !isLocalStorageModel,
-				testButton: false,
-			});
+
+			modelOptions.setIsDeleteStoredModelButtonDisabled(!isLocalStorageModel);
+			modelOptions.setIsCreateModelButtonDisabled(isLocalStorageModel);
+			modelOptions.setIsHiddenLayerSizeInputDisabled(isLocalStorageModel);
+			modelOptions.setIsTrainButtonDisabled(!isLocalStorageModel);
+			modelOptions.setIsTestButtonDisabled(false);
 		},
 		[
 			setLocalStorageModel,
 			setStoredModelStatus,
-			setDisabledStatus,
-			disabledStatus,
+			modelOptions.setIsDeleteStoredModelButtonDisabled,
+			modelOptions.setIsCreateModelButtonDisabled,
+			modelOptions.setIsHiddenLayerSizeInputDisabled,
+			modelOptions.setIsTrainButtonDisabled,
+			modelOptions.setIsTestButtonDisabled,
 		],
 	);
 
 	const loadModel = useCallback(async () => {
 		const loadedPolicyNet = await SaveablePolicyNetwork.loadModel(
-			maxStepsPerGame,
+			modelOptions.maxStepsPerGame,
 			modelSavePath,
 			true,
 		);
 		setPolicyNet(loadedPolicyNet);
-		setHiddenLayerSize(loadedPolicyNet.hiddenLayerSizes() as number);
+		modelOptions.setHiddenLayerSize(
+			loadedPolicyNet.hiddenLayerSizes() as number,
+		);
 		processModelDetails(modelSavePath);
-	}, [maxStepsPerGame, modelSavePath]);
+	}, [modelOptions.maxStepsPerGame, modelSavePath]);
 
 	useEffect(() => {
 		if (modelSavePath) {
@@ -124,8 +115,8 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 	const createModel = useCallback(async () => {
 		try {
 			const newPolicyNet = new SaveablePolicyNetwork({
-				hiddenLayerSizesOrModel: hiddenLayerSize,
-				maxStepsPerGame: maxStepsPerGame,
+				hiddenLayerSizesOrModel: modelOptions.hiddenLayerSize,
+				maxStepsPerGame: modelOptions.maxStepsPerGame,
 				modelName: LOCAL_STORAGE_MODEL_PATH,
 			});
 			await newPolicyNet.saveModel();
@@ -133,14 +124,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			setPolicyNet(newPolicyNet);
 			setLocalStorageModel(true);
 			setStoredModelStatus(localStorageModelName);
-			setDisabledStatus({
-				...disabledStatus,
-				deleteStoredModelButton: false,
-				createModelButton: true,
-				hiddenLayerSizesInput: !!policyNet,
-				trainButton: false,
-				testButton: false,
-			});
+			modelOptions.setIsDeleteStoredModelButtonDisabled(false);
+			modelOptions.setIsCreateModelButtonDisabled(true);
+			modelOptions.setIsHiddenLayerSizeInputDisabled(!!policyNet);
+			modelOptions.setIsTrainButtonDisabled(false);
+			modelOptions.setIsTestButtonDisabled(false);
 			setModelNames((prevModelNames) => [
 				prevModelNames[0],
 				{ key: LOCAL_STORAGE_MODEL_PATH, value: localStorageModelName },
@@ -148,7 +136,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 		} catch (err) {
 			console.error(`ERROR: ${(err as Error).message}`);
 		}
-	}, [hiddenLayerSize, maxStepsPerGame, modelSavePath]);
+	}, [
+		modelOptions.hiddenLayerSize,
+		modelOptions.maxStepsPerGame,
+		modelSavePath,
+	]);
 
 	const deleteStoredModel = useCallback(async () => {
 		if (
@@ -165,10 +157,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			);
 			setModelSavePath(MODEL_SAVE_PATH);
 			setStoredModelStatus("No stored model.");
-			setDisabledStatus((prevStatus) => ({
-				...prevStatus,
-				deleteStoredModelButton: true,
-			}));
+			modelOptions.setIsDeleteStoredModelButtonDisabled(true);
 		}
 	}, [policyNet]);
 
@@ -177,19 +166,24 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			setStopRequested(true);
 		} else {
 			disableModelControls();
-			const trainIterations = Number.parseInt(numberOfIterations, 10);
+			const trainIterations = Number.parseInt(
+				modelOptions.numberOfIterations,
+				10,
+			);
 			if (!(trainIterations > 0))
 				throw new Error(`Invalid number of iterations: ${trainIterations}`);
-			if (!(gamesPerIteration > 0))
+			if (!(modelOptions.gamesPerIteration > 0))
 				throw new Error(
-					`Invalid # of games per iterations: ${gamesPerIteration}`,
+					`Invalid # of games per iterations: ${modelOptions.gamesPerIteration}`,
 				);
-			if (!(maxStepsPerGame > 1))
-				throw new Error(`Invalid max. steps per game: ${maxStepsPerGame}`);
-			if (!(discountRate > 0 && discountRate < 1))
-				throw new Error(`Invalid discount rate: ${discountRate}`);
-			if (!(learningRate > 0 && learningRate < 1))
-				throw new Error(`Invalid learning rate: ${learningRate}`);
+			if (!(modelOptions.maxStepsPerGame > 1))
+				throw new Error(
+					`Invalid max. steps per game: ${modelOptions.maxStepsPerGame}`,
+				);
+			if (!(modelOptions.discountRate > 0 && modelOptions.discountRate < 1))
+				throw new Error(`Invalid discount rate: ${modelOptions.discountRate}`);
+			if (!(modelOptions.learningRate > 0 && modelOptions.learningRate < 1))
+				throw new Error(`Invalid learning rate: ${modelOptions.learningRate}`);
 
 			onIterationEnd(0, trainIterations);
 			setStopRequested(false);
@@ -204,12 +198,12 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 					}
 				} else if (policyNet) {
 					await trainModelForNumberOfGames({
-						maxEpsilon: maxEpsilon,
-						minEpsilon: minEpsilon,
-						discountRate: discountRate,
-						learningRate: learningRate,
-						gamesPerIteration: gamesPerIteration,
-						maxStepsPerGame: maxStepsPerGame,
+						maxEpsilon: modelOptions.maxEpsilon,
+						minEpsilon: modelOptions.minEpsilon,
+						discountRate: modelOptions.discountRate,
+						learningRate: modelOptions.learningRate,
+						gamesPerIteration: modelOptions.gamesPerIteration,
+						maxStepsPerGame: modelOptions.maxStepsPerGame,
 						beforeEvening: gameStateService.beforeEvening,
 						policyNet: policyNet,
 						onGameEnd: onGameEnd,
@@ -225,11 +219,11 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 		}
 	}, [
 		trainButtonText,
-		numberOfIterations,
-		gamesPerIteration,
-		maxStepsPerGame,
-		discountRate,
-		learningRate,
+		modelOptions.numberOfIterations,
+		modelOptions.gamesPerIteration,
+		modelOptions.maxStepsPerGame,
+		modelOptions.discountRate,
+		modelOptions.learningRate,
 		renderDuringTraining,
 		policyNet,
 	]);
@@ -238,7 +232,7 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 		setTestState(!testState);
 		if (!testState) {
 			if (!policyNet) return;
-			const memory = new Memory(maxStepsPerGame);
+			const memory = new Memory(modelOptions.maxStepsPerGame);
 			const orchestrator = new Orchestrator(
 				policyNet,
 				memory,
@@ -246,9 +240,9 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				0,
 				0,
 				gameStateService,
-				maxEpsilon,
-				minEpsilon,
-				lambda,
+				modelOptions.maxEpsilon,
+				modelOptions.minEpsilon,
+				modelOptions.lambda,
 				setTrainingProgress,
 			);
 			orchestrator.test();
@@ -259,20 +253,14 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 
 	const disableModelControls = useCallback(() => {
 		setTrainButtonText("Stop");
-		setDisabledStatus((prevStatus) => ({
-			...prevStatus,
-			testButton: true,
-			deleteStoredModelButton: true,
-		}));
+		modelOptions.setIsTestButtonDisabled(true);
+		modelOptions.setIsDeleteStoredModelButtonDisabled(true);
 	}, []);
 
 	const enableModelControls = useCallback(() => {
 		setTrainButtonText("Train");
-		setDisabledStatus((prevStatus) => ({
-			...prevStatus,
-			testButton: false,
-			deleteStoredModelButton: false,
-		}));
+		modelOptions.setIsTestButtonDisabled(false);
+		modelOptions.setIsDeleteStoredModelButtonDisabled(false);
 	}, []);
 
 	const onIterationEnd = useCallback(
@@ -292,10 +280,10 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 	}, []);
 
 	const trainAndRender = useCallback(async () => {
-		onGameEnd(0, gamesPerIteration);
+		onGameEnd(0, modelOptions.gamesPerIteration);
 		if (policyNet) {
-			let memory = new Memory(maxStepsPerGame);
-			for (let i = 0; i < gamesPerIteration; ++i) {
+			let memory = new Memory(modelOptions.maxStepsPerGame);
+			for (let i = 0; i < modelOptions.gamesPerIteration; ++i) {
 				if (stopRequested) {
 					break;
 				}
@@ -304,30 +292,30 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 				const orchestrator = new Orchestrator(
 					policyNet,
 					memory,
-					discountRate,
-					learningRate,
-					maxStepsPerGame,
+					modelOptions.discountRate,
+					modelOptions.learningRate,
+					modelOptions.maxStepsPerGame,
 					gameStateService,
-					maxEpsilon,
-					minEpsilon,
-					lambda,
+					modelOptions.maxEpsilon,
+					modelOptions.minEpsilon,
+					modelOptions.lambda,
 					setTrainingProgress,
 				);
 				await orchestrator.run();
-				onGameEnd(i + 1, gamesPerIteration);
-				memory = new Memory(maxStepsPerGame);
+				onGameEnd(i + 1, modelOptions.gamesPerIteration);
+				memory = new Memory(modelOptions.maxStepsPerGame);
 			}
 		}
 	}, [
-		gamesPerIteration,
+		modelOptions.gamesPerIteration,
 		policyNet,
-		discountRate,
-		learningRate,
-		maxStepsPerGame,
+		modelOptions.discountRate,
+		modelOptions.learningRate,
+		modelOptions.maxStepsPerGame,
 		gameStateService,
-		maxEpsilon,
-		minEpsilon,
-		lambda,
+		modelOptions.maxEpsilon,
+		modelOptions.minEpsilon,
+		modelOptions.lambda,
 	]);
 
 	const toggleSkipRender = useCallback(() => {
@@ -406,24 +394,23 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 					<div className="with-cols">
 						<div className="with-rows init-model">
 							<div className="input-div with-rows">
-								<label htmlFor="hiddenLayerSize" className="input-label">
-									Hidden layer size(s) (e.g.: "256", "64"):
-								</label>
-								<input
+								<InputGroup
 									id="hiddenLayerSize"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-									value={hiddenLayerSize}
-									onChange={(e) => setHiddenLayerSize(e.target.valueAsNumber)}
-									disabled={disabledStatus.hiddenLayerSizesInput}
+									label="Hidden layer size(s)"
+									value={modelOptions.hiddenLayerSize}
+									onChange={(e) =>
+										modelOptions.setHiddenLayerSize(e.target.valueAsNumber)
+									}
 									type="number"
+									disabled={modelOptions.isHiddenLayerSizeInputDisabled}
 								/>
 							</div>
 							<button
 								onClick={createModel}
-								disabled={disabledStatus.createModelButton}
+								disabled={modelOptions.isCreateModelButtonDisabled}
 								type="button"
 								className={
-									disabledStatus.createModelButton
+									modelOptions.isCreateModelButtonDisabled
 										? "bg-gray-600 disabled"
 										: "cursor-pointer bg-green-600 hover:bg-green-700 text-white py-2 px-4"
 								}
@@ -433,170 +420,66 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 						</div>
 						<div className="with-rows init-model">
 							<div className="input-div with-rows">
-								<label htmlFor="storedModelStatus" className="input-label">
-									Model:
-								</label>
-								<input
+								<InputGroup
 									id="storedModelStatus"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+									label="Model:"
 									value={storedModelStatus}
-									disabled
-									readOnly
+									readonly={true}
 								/>
 							</div>
 							<button
 								onClick={deleteStoredModel}
 								className={
-									disabledStatus.deleteStoredModelButton
+									modelOptions.isDeleteStoredModelButtonDisabled
 										? "bg-gray-600 disabled"
 										: "cursor-pointer bg-red-600 hover:bg-red-700 text-white py-2 px-4"
 								}
-								disabled={disabledStatus.deleteStoredModelButton}
+								disabled={modelOptions.isDeleteStoredModelButtonDisabled}
 								type="button"
 							>
 								Delete stored model
 							</button>
 						</div>
 					</div>
+					<ModelOptions {...modelOptions} />
+					<div className="input-div">
+						<InputGroup
+							id="renderDuringTraining"
+							label="Render during training"
+							value={renderDuringTraining ? "Yes" : "No"}
+							onChange={() => toggleSkipRender()}
+							type="checkbox"
+						/>
+						<div className="note mb-6">
+							{trainingProgress || "Uncheck me to speed up training"}
+						</div>
+					</div>
 
-					<p className="section-head">Training Parameters</p>
-					<div className="with-rows">
-						<div className="input-div">
-							<label htmlFor="numberOfIterations" className="input-label">
-								Number of iterations:
-							</label>
-							<input
-								id="numberOfIterations"
-								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-								value={numberOfIterations}
-								onChange={(e) => setNumberOfIterations(e.target.value)}
-							/>
-						</div>
-						<div className="input-div">
-							<label htmlFor="gamesPerIteration" className="input-label">
-								Games per iteration:
-							</label>
-							<input
-								id="gamesPerIteration"
-								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-								value={gamesPerIteration}
-								onChange={(e) => setGamesPerIteration(e.target.valueAsNumber)}
-								type="number"
-							/>
-						</div>
-						<div className="input-div">
-							<label htmlFor="maxStepsPerGame" className="input-label">
-								Max. steps per game:
-							</label>
-							<input
-								id="maxStepsPerGame"
-								className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-								value={maxStepsPerGame}
-								onChange={(e) => setMaxStepsPerGame(e.target.valueAsNumber)}
-								type="number"
-							/>
-						</div>
-						<div className="with-cols">
-							<div className="input-div">
-								<label htmlFor="learningRate" className="input-label">
-									Learning rate (<i>a</i>):
-								</label>
-								<input
-									id="learningRate"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-									value={learningRate}
-									onChange={(e) => setLearningRate(e.target.valueAsNumber)}
-									type="number"
-								/>
-							</div>
-							<div className="input-div">
-								<label htmlFor="discountRate" className="input-label">
-									Discount rate (<i>&gamma;</i>):
-								</label>
-								<input
-									id="discountRate"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-									value={discountRate}
-									onChange={(e) => setDiscountRate(e.target.valueAsNumber)}
-									type="number"
-								/>
-							</div>
-						</div>
-						<div className="with-cols">
-							<div className="input-div">
-								<label htmlFor="minEpsilon" className="input-label">
-									Min epsilon (
-									<i>
-										&epsilon;<sub>min</sub>
-									</i>
-									):
-								</label>
-								<input
-									id="minEpsilon"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-									value={minEpsilon}
-									onChange={(e) => setMinEpsilon(e.target.valueAsNumber)}
-									type="number"
-								/>
-							</div>
-							<div className="input-div">
-								<label htmlFor="maxEpsilon" className="input-label">
-									Max epsilon (
-									<i>
-										&epsilon;<sub>max</sub>
-									</i>
-									):
-								</label>
-								<input
-									id="maxEpsilon"
-									className="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-									value={maxEpsilon}
-									onChange={(e) => setMaxEpsilon(e.target.valueAsNumber)}
-									type="number"
-								/>
-							</div>
-						</div>
-						<div className="input-div">
-							<label htmlFor="renderDuringTraining" className="input-label">
-								Render during training:
-							</label>
-							<input
-								id="renderDuringTraining"
-								type="checkbox"
-								checked={renderDuringTraining}
-								onChange={() => toggleSkipRender()}
-							/>
-							<span className="note">
-								{trainingProgress || "Uncheck me to speed up training"}
-							</span>
-						</div>
-
-						<div className="buttons-section">
-							<button
-								onClick={train}
-								disabled={disabledStatus.trainButton}
-								type="button"
-								className={
-									disabledStatus.trainButton
-										? "bg-gray-600 disabled"
-										: "cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4"
-								}
-							>
-								{trainButtonText}
-							</button>
-							<button
-								onClick={test}
-								disabled={disabledStatus.testButton}
-								type="button"
-								className={
-									disabledStatus.testButton
-										? "bg-gray-600 disabled"
-										: "cursor-pointer bg-blue-700 hover:bg-blue-800 text-white py-2 px-4"
-								}
-							>
-								Test
-							</button>
-						</div>
+					<div className="buttons-section">
+						<button
+							onClick={train}
+							disabled={modelOptions.isTrainButtonDisabled}
+							type="button"
+							className={
+								modelOptions.isTrainButtonDisabled
+									? "bg-gray-600 disabled"
+									: "cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4"
+							}
+						>
+							{trainButtonText}
+						</button>
+						<button
+							onClick={test}
+							disabled={modelOptions.isTestButtonDisabled}
+							type="button"
+							className={
+								modelOptions.isTestButtonDisabled
+									? "bg-gray-600 disabled"
+									: "cursor-pointer bg-blue-700 hover:bg-blue-800 text-white py-2 px-4"
+							}
+						>
+							Test
+						</button>
 					</div>
 				</div>
 			</section>

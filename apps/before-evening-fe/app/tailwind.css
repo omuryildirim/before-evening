@@ -302,8 +302,7 @@ body {
 		.note {
 			font-size: 80%;
 			font-style: italic;
-			display: inline-block;
-			margin-left: 15px;
+			margin-top: -5px;
 		}
 	}
 }
