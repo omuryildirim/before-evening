@@ -4,50 +4,60 @@
 
 # Before Evening
 
-A project where a simple Javascript car game combined with an autonomous driving agent powered by a Tensorflow.js.
-The model is based on a reinforcement learning model, it follows the principles of Q-learning.
+This project features a simple JavaScript car game combined with an autonomous driving agent powered by TensorFlow.js.
+The model is based on reinforcement learning and follows the principles of Q-learning.
 
-The project consists a pre-trained model to control the vehicle in Before Evening game.
-Further, project offers a UI for training a new model in user's browser. User can change certain parameters of model
-and create their own autonomous agent in their browser.
+The project includes a pre-trained model to control the vehicle in the Before Evening game.
+Additionally, it offers a UI for training a new model in the user's browser. Users can modify certain parameters of the model
+and create their own autonomous agent directly in their browser.
 
-Project consists two front-end applications and a back-end application.
-First front-end app is a Javascript module under `./src` path. Module is the main car game, 
-inspired from [Javascript Racer](https://github.com/jakesgordon/javascript-racer). 
-Second front-end app is an Angular web-app under `./implementations/before-evening`. 
-Angular application imports the car game module and creates/loads a Tensorflow.js model to train/test in realtime at the browser.
-It consists a simple UI that user can set training parameters, train the model or test already trained model.
-And finally, back-end app is a Node.js module at `./implementations/node-tensorflow`. The app uses Tensorflow.js package for Node.js
-and the car game module, and trains a model. Node.js app is used to test training in a faster way. It uses same model and Q-learning method
-to train. Thus, output model is same both in browser and Node.js app.
+The project consists of multiple applications and shared modules.
 
-The goal of project is to create an autonomous driving model by only using browser to explore the capabilities of WebGL based
-Tensorflow.js machine learning platform. A pre-trained very well working autonomous driving agent model is stored at
-`./implementations/shared/before-evening-{version}`.
+1. **Frontend Application (before-evening-fe)**:
+  - This is the main frontend application for the Before Evening car game.
+  - It is built with TypeScript and utilizes various tools and libraries to create an interactive and user-friendly experience.
+  - The application imports the game engine module and creates/loads a TensorFlow.js model to train/test in real-time in the browser.
+  - It includes a simple UI that allows the user to set training parameters, train the model, or test an already trained model.
+
+2. **Game Engine (before-evening-game-engine)**:
+  - This module provides the core game engine functionalities required to run the Before Evening car game.
+  - It handles game logic, physics, and interactions within the game world.
+  - Inspired by [Javascript Racer](https://github.com/jakesgordon/javascript-racer).
+
+3. **Node.js TensorFlow Trainer (node-tensorflow-trainer)**:
+  - This module provides the necessary scripts and configurations to train the autonomous driving agent using TensorFlow.js in a Node.js environment.
+  - It leverages the game engine and shared utilities to facilitate the training process.
+  - The Node.js application is used to test training in a faster way. It uses the same model and Q-learning method to train, ensuring the output model is the same both in the browser and the Node.js app.
+
+4. **Shared Module (shared)**:
+  - This module provides common utilities and resources that are used across multiple modules within the Before Evening project.
+  - It includes shared functions, configurations, and assets that facilitate the development and integration of different parts of the project.
+
+The goal of the project is to create an autonomous driving model by using only the browser to explore the capabilities of the WebGL-based TensorFlow.js machine learning platform. A pre-trained, very well-working autonomous driving agent model is stored at `./apps/shared/before-evening-{version}`.
 
 # Installation
 ### Dependencies
-- Node.js >= 14.x.x
+- Node.js >= 20.x.x
 
 ### Web App
 To run front-end application and test pre-trained model or train your own model on browser;
 
 ```
-cd  ./implementations/before-evening/
-npm i
-npm run start
+cd apps/before-evening-fe
+pnpm install
+pnpm run dev
 ```
 
-Then go to your browser and navigate to `localhost:4200`.
+Then go to your browser and navigate to `localhost:5173`.
 
 ### Node.js training
-To run Node.js application and train your own model in terminal/command-line;
+To run Node.js application and train your own model in terminal;
 
 ```
-cd  ./implementations/node-tensorflow/
-npm i
-npm run build
-node .\build\implementations\node-tensorflow\src\index.js
+cd apps/node-tensorflow-trainer
+pnpm install
+pnpm run build
+node ./build/main/index.js
 ```
 
 # Theory
