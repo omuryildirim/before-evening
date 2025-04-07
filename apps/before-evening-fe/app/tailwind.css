@@ -203,20 +203,24 @@ body {
 		p {
 			max-width: 960px;
 			line-height: 1.6em;
-		}
 
-		p.section-head {
-			font-variant: small-caps;
-			text-transform: uppercase;
-			letter-spacing: 0.17em;
-			line-height: 1.2em;
-			font-weight: 500;
-			margin-top: 2em;
-			margin-bottom: 1em;
-			border-left: 1px solid #ef6c00;
-			padding-left: 24px;
-			margin-left: -24px;
-			color: #818181;
+			&.section-head {
+				font-variant: small-caps;
+				text-transform: uppercase;
+				letter-spacing: 0.17em;
+				line-height: 1.2em;
+				font-weight: 500;
+				margin-top: 2em;
+				margin-bottom: 1em;
+				border-left: 1px solid #ef6c00;
+				padding-left: 24px;
+				margin-left: -24px;
+				color: #818181;
+			}
+
+			&.paragraph {
+				margin-top: 1em;
+			}
 		}
 
 		a {

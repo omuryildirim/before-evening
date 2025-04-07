@@ -2,7 +2,6 @@ import { SaveablePolicyNetwork } from "@before-evening/shared";
 import React, { useState, useEffect, useCallback } from "react";
 import type GameStateService from "~/components/GameStateService";
 import { CreateAndDeleteModelSection } from "~/components/reinforcement-learning/CreateAndDeleteModelSection";
-import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
 import { ModelOptions } from "~/components/reinforcement-learning/ModelOptions";
 import { useModelOptions } from "~/components/reinforcement-learning/ModelOptions/useModelOptions";
 import { TrainAndTestSection } from "~/components/reinforcement-learning/TrainAndTestSection";
@@ -111,36 +110,44 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 
 			<section>
 				<p className="section-head">Instructions</p>
-				<ul>
-					<li>
-						We have already trained a model for over 6 million iterations. You
-						can't train this model more. Instead you can test this model and see
-						how great it is! But you can also create a model that would be
-						stored in your browser's localstorage. To do this:
-					</li>
-					<li>Choose a hidden layer size and click "Create Model".</li>
-					<li>Select training parameters and then click "Train".</li>
-					<li>
-						Note that while the model is training it periodically saves a copy
-						of itself to localstorage, this mean you can refresh the page and
-						continue training from the last save point. If at any point you want
-						to start training from scratch, click "Delete stored Model".
-					</li>
-					<li>
-						Once the model has finished training you can click "Test" to see if
-						your model can drive autonomously. You can also click 'Stop' to
-						pause the training after the current iteration ends if you want to
-						test the model sooner.
-					</li>
-					<li>
-						You can watch the training. But this may take long due to fact that
-						agent needs to be trained for couple of hundred thousand steps to
-						learn basics of driving. Therefore, you can also select to train
-						without rendering the training. We already set the recommended
-						parameters for training. But you can play around and see the effects
-						of parameters.
-					</li>
-				</ul>
+				<p>
+					Our model have been trained for over 6 million iterations. Further
+					training of this model is not possible. Instead, you can test the
+					model to see its performance. Alternatively, you can create a model
+					stored in your browser's local storage. To do this:
+				</p>
+
+				<p className="paragraph">
+					Choose a hidden layer size and click "Create Model".
+				</p>
+
+				<p className="paragraph">
+					Select training parameters and then click "Train".
+				</p>
+
+				<p className="paragraph">
+					While the model is training, it periodically saves a copy to local
+					storage. This allows you to refresh the page and continue training
+					from the last save point. To start training from scratch, click
+					"Delete stored Model".
+				</p>
+
+				<p className="paragraph">
+					Upon the completion of model training, click 'Test' to evaluate
+					whether your model can autonomously drive the car. If you wish to test
+					the model before training completes, you can click 'Stop' to pause the
+					training after the current iteration concludes.
+				</p>
+
+				<p className="paragraph">
+					You can monitor the training process, but please note that it may take
+					a considerable amount of time since the agent needs to undergo several
+					hundred thousand steps to learn the basics of driving. As an
+					alternative, you can choose to train without rendering the game, which
+					may expedite the process. We have already set the recommended
+					parameters for training, but you are welcome to experiment with these
+					parameters to observe their effects.
+				</p>
 			</section>
 
 			<section>
