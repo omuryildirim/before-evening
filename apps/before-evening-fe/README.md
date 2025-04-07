@@ -1,47 +1,39 @@
-# Welcome to Remix + Cloudflare!
+# Before Evening Frontend
 
-- 📖 [Remix docs](https://remix.run/docs)
-- 📖 [Remix Cloudflare docs](https://remix.run/guides/vite#cloudflare)
+## Overview
+The `before-evening-fe` module is the frontend application for the Before Evening car game. It is built with TypeScript and utilizes various tools and libraries to create an interactive and user-friendly experience.
 
-## Development
+## Structure
+- **app/**: Contains the main application code.
+- **functions/**: Directory for various utility functions used in the application.
+- **public/**: Public assets and resources.
+- **.gitignore**: Git ignore file to exclude specific files and directories from version control.
+- **biome.json**: Configuration file for the application.
+- **load-context.ts**: Script to load application context.
+- **package.json**: Node.js package file that lists dependencies and scripts.
+- **pnpm-lock.yaml**: Lock file for package management with pnpm.
+- **postcss.config.js**: Configuration file for PostCSS.
+- **tailwind.config.ts**: Configuration file for Tailwind CSS.
+- **tsconfig.json**: TypeScript configuration file.
+- **vite.config.ts**: Configuration file for Vite.
 
-Run the dev server:
-
-```sh
-npm run dev
+## Installation
+To install the dependencies, run:
+```bash
+pnpm install
 ```
 
-To run Wrangler:
-
-```sh
-npm run build
-npm run start
+## Usage
+To start the application, run:
+```bash
+pnpm run dev
 ```
 
-## Typegen
-
-Generate types for your Cloudflare bindings in `wrangler.toml`:
-
-```sh
-npm run typegen
+## Build
+To build the application for production, run:
+```bash
+pnpm run build
 ```
 
-You will need to rerun typegen whenever you make changes to `wrangler.toml`.
-
-## Deployment
-
-First, build your app for production:
-
-```sh
-npm run build
-```
-
-Then, deploy your app to Cloudflare Pages:
-
-```sh
-npm run deploy
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+## License
+This project is licensed under the MIT License.
