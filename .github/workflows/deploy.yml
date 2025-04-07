@@ -1,0 +1,32 @@
+name: Deploy Workers
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - apps/before-evening-fe # Only triggers on changes in the worker folder
+
+jobs:
+  deploy-before-evening-fe-worker:
+    runs-on: ubuntu-latest
+    name: Deploy before-evening-fe Worker
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+      - run: pnpm install --frozen-lockfile
+        shell: bash
+        working-directory: ./apps/before-evening-fe
+      - run: pnpm build
+        shell: bash
+        working-directory: ./apps/before-evening-fe
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: "apps/before-evening-fe"
+          command: |
+            pages deploy ./build/client --branch=main
