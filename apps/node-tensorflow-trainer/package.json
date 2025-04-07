@@ -23,6 +23,9 @@
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*"
   },
+  "devDependencies": {
+    "@types/node": "20.17.30"
+  },
   "packageManager": "pnpm@10.4.1",
   "files": [
     "build/main",

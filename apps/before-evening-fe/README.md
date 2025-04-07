@@ -34,6 +34,6 @@ To build the application for production, run:
 ```bash
 pnpm run build
 ```
- 
+
 ## License
 This project is licensed under the MIT License.

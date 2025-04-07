@@ -3,9 +3,9 @@ name: Deploy Workers
 on:
   push:
     branches:
-      - main
+      - master
     paths:
-      - apps/before-evening-fe # Only triggers on changes in the worker folder
+      - apps/before-evening-fe/** # Only triggers on changes in the worker folder
 
 jobs:
   deploy-before-evening-fe-worker:
@@ -17,10 +17,22 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10.4.1
-      - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: pnpm install
         shell: bash
-        working-directory: ./apps/before-evening-fe
-      - run: pnpm build
+      - name: Build game engine
+        run: pnpm build
+        shell: bash
+        working-directory: ./apps/before-evening-game-engine
+      - name: Build shared module
+        run: pnpm build
+        shell: bash
+        working-directory: ./apps/shared
+      - name: Build FE app
+        run: pnpm build
         shell: bash
         working-directory: ./apps/before-evening-fe
       - name: Deploy
@@ -29,4 +41,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           workingDirectory: "apps/before-evening-fe"
           command: |
-            pages deploy ./build/client --branch=main
+            pages deploy ./build/client --branch=master
