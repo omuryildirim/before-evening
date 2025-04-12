@@ -38,7 +38,7 @@
 
     "lib": ["es2017", "dom", "esnext.asynciterable"],
     "skipLibCheck": true,
-    "types": [],
+    "types": ["node"],
     "typeRoots": ["node_modules/@types", "src/types"]
   },
   "include": ["src/**/*.ts"],
