@@ -33,7 +33,7 @@ class NodeTensorflow {
 		this.gamesPerIteration = 100;
 		this.maxStepsPerGame = 1000;
 		this.discountRate = 0.95;
-		this.learningRate = 1;
+		this.learningRate = 0.9;
 		this.iterationStatus = "";
 		this.gameStatus = "";
 		this.startTime = new Date();
@@ -41,10 +41,16 @@ class NodeTensorflow {
 		this.initialize();
 	}
 
+	private resolveModelPath() {
+		let sharedFolderPrefix = "../shared/";
+		if (!fs.existsSync(path.resolve(sharedFolderPrefix))) {
+			sharedFolderPrefix = `../${sharedFolderPrefix}`;
+		}
+		return path.resolve(`${sharedFolderPrefix}${MODEL_VERSION}`);
+	}
+
 	private async initialize() {
-		if (
-			fs.existsSync(path.resolve(`../../shared/${MODEL_VERSION}/model.json`))
-		) {
+		if (fs.existsSync(`${this.resolveModelPath()}/model.json`)) {
 			this.policyNet = await SaveableNodePolicyNetwork.loadModel(
 				this.maxStepsPerGame,
 				MODEL_SAVE_PATH,
@@ -64,7 +70,7 @@ class NodeTensorflow {
 		this.policyNet = new SaveableNodePolicyNetwork({
 			hiddenLayerSizesOrModel: this.hiddenLayerSize,
 			maxStepsPerGame: this.maxStepsPerGame,
-			modelName: MODEL_SAVE_PATH,
+			modelName: this.resolveModelPath(),
 		});
 	}
 
@@ -95,6 +101,7 @@ class NodeTensorflow {
 		this.onIterationEnd(0, trainIterations);
 		for (let iteration = 0; iteration < trainIterations; ++iteration) {
 			this.onGameEnd(0, this.gamesPerIteration);
+
 			const dataset = await trainModelForNumberOfGames({
 				maxEpsilon: MAX_EPSILON,
 				minEpsilon: MIN_EPSILON,
@@ -143,11 +150,9 @@ class NodeTensorflow {
 	}
 
 	private writeLogToFile(dataset: LogData[]) {
-		const logStream = fs.createWriteStream("dataset.txt", { flags: "a" });
-		for (const action of dataset) {
-			logStream.write(`${JSON.stringify(action)}\n`);
-		}
-		logStream.end();
+		fs.writeFileSync(path.resolve("dataset.txt"), JSON.stringify(dataset), {
+			flag: "w",
+		});
 	}
 
 	private getPassedTime() {
