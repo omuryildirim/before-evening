@@ -148,7 +148,7 @@ export type SaveablePolicyNetworkParams = {
  * A subclass of PolicyNetwork that supports saving and loading.
  */
 export class SaveablePolicyNetwork extends PolicyNetwork {
-	private readonly modelName: string;
+	readonly modelName: string;
 
 	/**
 	 * Constructor of SaveablePolicyNetwork
