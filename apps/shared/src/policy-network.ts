@@ -138,7 +138,7 @@ class PolicyNetwork {
 	}
 }
 
-type SaveablePolicyNetworkParams = {
+export type SaveablePolicyNetworkParams = {
 	hiddenLayerSizesOrModel: number | tf.LayersModel;
 	maxStepsPerGame: number;
 	modelName: string;
