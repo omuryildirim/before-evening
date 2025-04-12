@@ -26,12 +26,12 @@ export class ReinforcementLearningModel {
 		this.numActions = numActions;
 		this.batchSize = batchSize;
 
-		if (hiddenLayerSizesOrModel instanceof tf.LayersModel) {
-			this.network = hiddenLayerSizesOrModel;
+		if (Number.isInteger(hiddenLayerSizesOrModel)) {
+			this.defineModel(hiddenLayerSizesOrModel as number);
+		} else {
+			this.network = hiddenLayerSizesOrModel as tf.LayersModel;
 			this.network.summary();
 			this.network.compile({ optimizer: OPTIMIZER, loss: LOSS });
-		} else {
-			this.defineModel(hiddenLayerSizesOrModel);
 		}
 	}
 
@@ -89,7 +89,7 @@ export class ReinforcementLearningModel {
 	 * @param {tf.Tensor[]} xBatch
 	 * @param {tf.Tensor[]} yBatch
 	 */
-	public async train(xBatch, yBatch) {
+	public async train(xBatch: tf.Tensor2D, yBatch: tf.Tensor2D) {
 		await this.network.fit(xBatch, yBatch);
 	}
 
