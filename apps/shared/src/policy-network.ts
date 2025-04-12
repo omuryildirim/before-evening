@@ -36,6 +36,7 @@
 
 import * as tf from "@tensorflow/tfjs";
 
+import { NUMBER_OF_ACTIONS, NUMBER_OF_STATES } from "./constants";
 import type { Memory } from "./memory";
 import { ReinforcementLearningModel } from "./reinforcement-learning.model";
 
@@ -68,8 +69,8 @@ class PolicyNetwork {
 	) {
 		this.model = new ReinforcementLearningModel(
 			hiddenLayerSizesOrModel,
-			7,
-			8,
+			NUMBER_OF_STATES,
+			NUMBER_OF_ACTIONS,
 			maxStepsPerGame,
 		);
 	}
@@ -93,25 +94,25 @@ class PolicyNetwork {
 			this.model.predictNextActionQ(nextState),
 		);
 
-		const x: number[] = [];
-		const y: number[] = [];
+		const x: Float32Array<ArrayBufferLike>[] = [];
+		const y: Float32Array<ArrayBufferLike>[] = [];
 
 		// Update the states rewards with the discounted next states rewards
 		batch.forEach(([state, action, reward, nextState], index) => {
 			if (qsa[index]) {
-				const currentQ = (qsa as tf.Tensor[])[index].dataSync();
+				const currentQ = (qsa as tf.Tensor[])[
+					index
+				].dataSync() as Float32Array<ArrayBufferLike>;
 				currentQ[action] = nextState
 					? currentQ[action] +
 						(learningRate || 1) *
 							(reward +
 								discountRate *
-									((qsad as tf.Tensor[])[index]
-										.max()
-										.dataSync() as unknown as number) -
+									(qsad as tf.Tensor[])[index].max().dataSync()[0] -
 								currentQ[action])
 					: currentQ[action];
-				x.push(state.dataSync() as unknown as number);
-				y.push(currentQ as unknown as number);
+				x.push(state.dataSync() as Float32Array<ArrayBufferLike>);
+				y.push(currentQ);
 			} else {
 				qsa.splice(index, 1);
 				qsad.splice(index, 1);
@@ -127,11 +128,17 @@ class PolicyNetwork {
 		}
 
 		// Reshape the batches to be fed to the network
-		const xTensor = tf.tensor2d(x, [x.length, this.model.numStates]);
-		const yTensor = tf.tensor2d(y, [y.length, this.model.numActions]);
+		const xTensor = tf.tensor2d(x as unknown as number[], [
+			x.length,
+			this.model.numStates,
+		]);
+		const yTensor = tf.tensor2d(y as unknown as number[], [
+			y.length,
+			this.model.numActions,
+		]);
 
 		// Learn the Q(s, a) values given associated discounted rewards
-		await this.model.train(x, y);
+		await this.model.train(xTensor, yTensor);
 
 		xTensor.dispose();
 		yTensor.dispose();
