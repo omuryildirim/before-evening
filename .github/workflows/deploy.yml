@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - apps/before-evening-fe/** # Only triggers on changes in the worker folder
+      - apps/before-evening-game-engine/** # Only triggers on changes in the worker folder
+      - apps/shared/** # Only triggers on changes in the worker folder
 
 jobs:
   deploy-before-evening-fe-worker:
