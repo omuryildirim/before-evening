@@ -134,14 +134,12 @@ class NodeTensorflow {
 	private onGameEnd(gameCount: number, totalGames: number) {
 		this.gameStatus = `Game ${gameCount} of ${totalGames}`;
 
-		console.log(
-			"*********",
-			"\n",
-			this.iterationStatus,
-			"\n",
-			this.gameStatus,
-			"\n",
-		);
+		console.log(`
+*********÷********************************
+
+${this.iterationStatus}
+${this.gameStatus}
+`);
 		console.log(this.getPassedTime());
 
 		if (gameCount === totalGames) {
