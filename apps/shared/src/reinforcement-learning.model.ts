@@ -4,6 +4,11 @@ import type { StateUpdate } from "@before-evening/game-engine";
 
 import { ACTIVATION, LOSS, OPTIMIZER } from "./constants";
 
+/**
+ * This class is used to create a model for reinforcement learning.
+ * It uses a neural network to predict the next action based on the current state.
+ * The model is defined by the number of hidden layers and the number of units in each layer.
+ */
 export class ReinforcementLearningModel {
 	public numStates: number;
 	public numActions: number;
@@ -11,7 +16,7 @@ export class ReinforcementLearningModel {
 	public network: tf.Sequential | tf.LayersModel;
 
 	/**
-	 * @param hiddenLayerSizesOrModel
+	 * @param {number | tf.LayersModel} hiddenLayerSizesOrModel
 	 * @param {number} numStates
 	 * @param {number} numActions1
 	 * @param {number} batchSize
@@ -35,6 +40,11 @@ export class ReinforcementLearningModel {
 		}
 	}
 
+	/**
+	 * Initializes the model with the given hidden layer sizes.
+	 *
+	 * @param {number | number[]} hiddenLayerSizeOrSizes
+	 */
 	defineModel(hiddenLayerSizeOrSizes: number | number[]) {
 		let hiddenLayerSizes: number[];
 		if (!Array.isArray(hiddenLayerSizeOrSizes)) {
@@ -63,6 +73,7 @@ export class ReinforcementLearningModel {
 	}
 
 	/**
+	 * Predicts the next action based on the provided states.
 	 * @param {tf.Tensor | tf.Tensor[]} states
 	 * @returns {tf.Tensor | tf.Tensor} The predictions of the state
 	 */
@@ -75,6 +86,7 @@ export class ReinforcementLearningModel {
 	}
 
 	/**
+	 * Predicts the next action based on the current state.
 	 * @param {: tf.Tensor | tf.Tensor2D} states
 	 * @returns {number} The predictions of the best action
 	 */
@@ -82,6 +94,8 @@ export class ReinforcementLearningModel {
 		const prediction = tf.tidy(() =>
 			(this.network.predict(states) as tf.Tensor<tf.Rank>).dataSync(),
 		) as Float32Array;
+
+		// Select the action with the highest Q-value
 		return prediction.indexOf(Math.max(...Array.from(prediction.values()))) - 1;
 	}
 
@@ -94,6 +108,9 @@ export class ReinforcementLearningModel {
 	}
 
 	/**
+	 * Choose an action based on the current state and epsilon-greedy policy.
+	 * The epsilon-greedy policy is a strategy used in reinforcement learning
+	 * to balance exploration and exploitation.
 	 * @param state
 	 * @param eps
 	 * @returns {number} The action chosen by the model (-1 : 6)
