@@ -52,10 +52,7 @@ export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
 	 *   `SaveablePolicyNetwork`.
 	 * @throws {Error} If no model can be found in file.
 	 */
-	static async loadModel(
-		maxStepsPerGame: number,
-		modelName: string,
-	) {
+	static async loadModel(maxStepsPerGame: number, modelName: string) {
 		console.log("Loading existing model...");
 		const model = await tf.loadLayersModel(`${modelName}/model.json`);
 		if (model) {

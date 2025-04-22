@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import path from "node:path";
+import ora, { type Ora } from "ora";
 
 import { BeforeEveningGameEngine } from "@before-evening/game-engine";
 import {
@@ -26,6 +27,7 @@ class NodeTensorflow {
 	private gameStatus: string;
 	private beforeEvening: BeforeEveningGameEngine;
 	private startTime: Date;
+	private spinner: Ora;
 
 	constructor() {
 		this.hiddenLayerSize = 1024;
@@ -37,6 +39,14 @@ class NodeTensorflow {
 		this.iterationStatus = "";
 		this.gameStatus = "";
 		this.startTime = new Date();
+
+		// Handle Ctrl+C to stop the spinner and exit
+		process.on("SIGINT", () => {
+			if (this.spinner) {
+				this.spinner.fail("Process interrupted by user.");
+			}
+			process.exit(1);
+		});
 
 		this.initialize();
 	}
@@ -98,52 +108,48 @@ class NodeTensorflow {
 			throw new Error(`Invalid learning rate: ${this.learningRate}`);
 		}
 
-		this.onIterationEnd(0, trainIterations);
+		this.onIterationEnd(1, trainIterations);
 		for (let iteration = 0; iteration < trainIterations; ++iteration) {
+			this.spinner = ora(
+				`Training iteration ${iteration + 1} of ${trainIterations}...`,
+			).start();
+			this.spinner.stop();
 			this.onGameEnd(0, this.gamesPerIteration);
-
-			const dataset = await trainModelForNumberOfGames({
-				maxEpsilon: MAX_EPSILON,
-				minEpsilon: MIN_EPSILON,
-				discountRate: this.discountRate,
-				learningRate: this.learningRate,
-				gamesPerIteration: this.gamesPerIteration,
-				maxStepsPerGame: this.maxStepsPerGame,
-				beforeEvening: this.beforeEvening,
-				policyNet: this.policyNet,
-				onGameEnd: this.onGameEnd.bind(this),
-			});
-			this.writeLogToFile(dataset);
-			this.onIterationEnd(iteration + 1, trainIterations);
-			await this.policyNet.saveModel();
+			try {
+				const dataset = await trainModelForNumberOfGames({
+					maxEpsilon: MAX_EPSILON,
+					minEpsilon: MIN_EPSILON,
+					discountRate: this.discountRate,
+					learningRate: this.learningRate,
+					gamesPerIteration: this.gamesPerIteration,
+					maxStepsPerGame: this.maxStepsPerGame,
+					beforeEvening: this.beforeEvening,
+					policyNet: this.policyNet,
+					onGameEnd: this.onGameEnd.bind(this),
+				});
+				this.writeLogToFile(dataset);
+				this.onIterationEnd(iteration + 2, trainIterations);
+				await this.policyNet.saveModel();
+				this.spinner.succeed(`Iteration ${iteration + 1} completed.`);
+			} catch (error) {
+				this.spinner.fail(
+					`Iteration ${iteration + 1} failed: ${error.message}`,
+				);
+				throw error; // Re-throw the error to stop execution if needed
+			}
 		}
 	}
 
 	private onIterationEnd(iterationCount: number, totalIterations: number) {
 		this.iterationStatus = `Iteration ${iterationCount} of ${totalIterations}`;
-
-		console.log(
-			"\n",
-			"--------------------------------------------------",
-			"\n",
-			this.iterationStatus,
-			"\n",
-		);
 	}
 
 	private onGameEnd(gameCount: number, totalGames: number) {
 		this.gameStatus = `Game ${gameCount} of ${totalGames}`;
 
-		console.log(`
-*********÷********************************
-
-${this.iterationStatus}
-${this.gameStatus}
-`);
-		console.log(this.getPassedTime());
-
-		if (gameCount === totalGames) {
-			this.gameStatus = "Updating weights...";
+		if (this.spinner) {
+			this.spinner.text = `${this.iterationStatus} | ${this.gameStatus} | ${this.getPassedTime()}`;
+			this.spinner.render();
 		}
 	}
 

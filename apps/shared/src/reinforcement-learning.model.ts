@@ -107,6 +107,7 @@ export class ReinforcementLearningModel {
 		await this.network.fit(xBatch, yBatch, {
 			epochs: 3,
 			batchSize: this.batchSize,
+			verbose: 0,
 		});
 	}
 
