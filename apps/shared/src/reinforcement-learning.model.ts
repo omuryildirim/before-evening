@@ -104,7 +104,10 @@ export class ReinforcementLearningModel {
 	 * @param {tf.Tensor[]} yBatch
 	 */
 	public async train(xBatch: tf.Tensor2D, yBatch: tf.Tensor2D) {
-		await this.network.fit(xBatch, yBatch);
+		await this.network.fit(xBatch, yBatch, {
+			epochs: 3,
+			batchSize: this.batchSize,
+		});
 	}
 
 	/**
