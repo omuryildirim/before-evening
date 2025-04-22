@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "22.14.1",
+    "ora": "8.2.0",
     "tsx": "4.19.3"
   },
   "packageManager": "pnpm@10.4.1",
