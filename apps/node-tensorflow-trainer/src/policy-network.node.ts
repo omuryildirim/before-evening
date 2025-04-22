@@ -46,21 +46,18 @@ export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
 	}
 
 	/**
-	 * Load the model fom IndexedDB.
+	 * Load the model fom file.
 	 *
 	 * @returns {SaveablePolicyNetwork} The instance of loaded
 	 *   `SaveablePolicyNetwork`.
-	 * @throws {Error} If no model can be found in IndexedDB.
+	 * @throws {Error} If no model can be found in file.
 	 */
 	static async loadModel(
 		maxStepsPerGame: number,
 		modelName: string,
-		browserModel?: boolean,
 	) {
 		console.log("Loading existing model...");
-		const model = await tf.loadLayersModel(
-			browserModel ? modelName : `${modelName}/model.json`,
-		);
+		const model = await tf.loadLayersModel(`${modelName}/model.json`);
 		if (model) {
 			console.log(`Loaded model from ${modelName}`);
 			return new SaveablePolicyNetwork({
