@@ -14,9 +14,9 @@
     "typegen": "wrangler types"
   },
   "dependencies": {
-    "@remix-run/cloudflare": "2.16.6",
-    "@remix-run/cloudflare-pages": "2.16.6",
-    "@remix-run/react": "2.16.6",
+    "@remix-run/cloudflare": "2.16.7",
+    "@remix-run/cloudflare-pages": "2.16.7",
+    "@remix-run/react": "2.16.7",
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*",
     "isbot": "5.1.28",
@@ -25,8 +25,8 @@
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20250519.0",
-    "@remix-run/dev": "2.16.6",
+    "@cloudflare/workers-types": "4.20250525.0",
+    "@remix-run/dev": "2.16.7",
     "@tailwindcss/postcss": "4.1.7",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
@@ -36,7 +36,7 @@
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.15.2"
+    "wrangler": "4.16.1"
   },
   "engines": {
     "node": ">=20.0.0"
