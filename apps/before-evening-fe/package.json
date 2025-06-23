@@ -25,18 +25,18 @@
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20250614.0",
+    "@cloudflare/workers-types": "4.20250620.0",
     "@remix-run/dev": "2.16.8",
     "@tailwindcss/postcss": "4.1.10",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
     "autoprefixer": "10.4.21",
-    "postcss": "8.5.5",
+    "postcss": "8.5.6",
     "tailwindcss": "4.1.10",
     "typescript": "5.8.3",
     "vite": "6.3.5",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.20.0"
+    "wrangler": "4.20.5"
   },
   "engines": {
     "node": ">=20.0.0"
