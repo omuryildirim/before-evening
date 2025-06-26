@@ -1,9 +1,8 @@
-import type * as tf from "@tensorflow/tfjs";
-
 import type {
 	BeforeEveningGameEngine,
 	StateUpdate,
 } from "@before-evening/game-engine";
+import type * as tf from "@tensorflow/tfjs";
 
 import {
 	ActionKeyToEventName,

@@ -177,7 +177,7 @@ export class SaveablePolicyNetwork extends PolicyNetwork {
 	static async checkStoredModelStatus(modelName: string) {
 		try {
 			return await tf.loadLayersModel(modelName);
-		} catch (e) {
+		} catch (_e) {
 			return null;
 		}
 	}

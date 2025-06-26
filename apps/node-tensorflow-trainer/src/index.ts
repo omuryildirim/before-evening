@@ -1,13 +1,12 @@
 import * as fs from "node:fs";
 import path from "node:path";
-import ora, { type Ora } from "ora";
-
 import { BeforeEveningGameEngine } from "@before-evening/game-engine";
 import {
 	type LogData,
 	MODEL_VERSION,
 	trainModelForNumberOfGames,
 } from "@before-evening/shared";
+import ora, { type Ora } from "ora";
 
 import { MODEL_SAVE_PATH } from "./constants";
 import { SaveableNodePolicyNetwork } from "./policy-network.node";
@@ -160,8 +159,7 @@ class NodeTensorflow {
 	}
 
 	private getPassedTime() {
-		const minutes =
-			(new Date().getTime() - this.startTime.getTime()) / 1000 / 60;
+		const minutes = (Date.now() - this.startTime.getTime()) / 1000 / 60;
 		const hours = Math.floor(minutes / 60);
 		const seconds = (((minutes * 100) % 100) / 100) * 60;
 
