@@ -1,12 +1,12 @@
 import { SaveablePolicyNetwork } from "@before-evening/shared";
-import React, { useCallback } from "react";
-import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
-import type { useModelOptions } from "~/components/reinforcement-learning/ModelOptions/useModelOptions";
+import { useCallback, useId } from "react";
 import {
 	LOCAL_STORAGE_MODEL_PATH,
-	MODEL_SAVE_PATH,
 	localStorageModelName,
+	MODEL_SAVE_PATH,
 } from "~/components/reinforcement-learning/constants";
+import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
+import type { useModelOptions } from "~/components/reinforcement-learning/ModelOptions/useModelOptions";
 
 interface Props {
 	modelOptions: ReturnType<typeof useModelOptions>;
@@ -31,7 +31,6 @@ export const CreateAndDeleteModelSection = ({
 	setModelNames,
 	storedModelStatus,
 	setStoredModelStatus,
-	modelSavePath,
 	setModelSavePath,
 	setLocalStorageModel,
 }: Props) => {
@@ -62,7 +61,16 @@ export const CreateAndDeleteModelSection = ({
 	}, [
 		modelOptions.hiddenLayerSize,
 		modelOptions.maxStepsPerGame,
-		modelSavePath,
+		modelOptions.setIsCreateModelButtonDisabled,
+		modelOptions.setIsDeleteStoredModelButtonDisabled,
+		modelOptions.setIsHiddenLayerSizeInputDisabled,
+		modelOptions.setIsTestButtonDisabled,
+		modelOptions.setIsTrainButtonDisabled,
+		setLocalStorageModel,
+		setModelNames,
+		setModelSavePath,
+		setPolicyNet,
+		setStoredModelStatus,
 	]);
 
 	const deleteStoredModel = useCallback(async () => {
@@ -82,7 +90,17 @@ export const CreateAndDeleteModelSection = ({
 			setStoredModelStatus("No stored model.");
 			modelOptions.setIsDeleteStoredModelButtonDisabled(true);
 		}
-	}, [policyNet]);
+	}, [
+		policyNet,
+		modelOptions.setIsDeleteStoredModelButtonDisabled,
+		setModelNames,
+		setModelSavePath,
+		setPolicyNet,
+		setStoredModelStatus,
+	]);
+
+	const hiddenLayerSizeId = useId();
+	const storedModelId = useId();
 
 	return (
 		<>
@@ -91,7 +109,7 @@ export const CreateAndDeleteModelSection = ({
 				<div className="with-rows init-model">
 					<div className="input-div with-rows">
 						<InputGroup
-							id="hiddenLayerSize"
+							id={hiddenLayerSizeId}
 							label="Hidden layer size(s)"
 							value={modelOptions.hiddenLayerSize}
 							onChange={(e) =>
@@ -117,7 +135,7 @@ export const CreateAndDeleteModelSection = ({
 				<div className="with-rows init-model">
 					<div className="input-div with-rows">
 						<InputGroup
-							id="storedModelStatus"
+							id={storedModelId}
 							label="Model:"
 							value={storedModelStatus}
 							readonly={true}

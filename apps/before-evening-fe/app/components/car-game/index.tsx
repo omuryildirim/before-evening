@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/nursery/useUniqueElementIds: <need unique ids> */
 import type { StateUpdate } from "@before-evening/game-engine";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -36,7 +37,15 @@ const CarGameComponent = ({ gameStateService, leftSideRef }: Params) => {
 			stateSubscription.unsubscribe();
 			gameStateService.removeRefreshGameUpdater(refreshGameUpdaterIndex);
 		};
-	}, [doNotRenderStats]);
+	}, [
+		gameStateService.beforeEvening.stateUpdate.subscribe,
+		gameStateService.addRefreshGameUpdater,
+		gameStateService.beforeEvening.resetGame,
+		gameStateService.beforeEvening.runGame,
+		leftSideRef.current?.clientWidth,
+		gameStateService.removeRefreshGameUpdater,
+		gameStateService.updateState,
+	]);
 
 	return (
 		<div className="car-game-container">

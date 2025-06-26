@@ -1,11 +1,10 @@
-import type * as tf from "@tensorflow/tfjs";
-
 import {
+	convertActionToKeyboardKeyNumber,
 	type Memory,
 	ReinforcementLearningModel,
 	type SaveablePolicyNetwork,
-	convertActionToKeyboardKeyNumber,
 } from "@before-evening/shared";
+import type * as tf from "@tensorflow/tfjs";
 import type GameStateService from "../GameStateService";
 import { ActionMap } from "./constants";
 

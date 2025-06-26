@@ -4,7 +4,7 @@ import {
 	trainModelForNumberOfGames,
 } from "@before-evening/shared";
 import * as tf from "@tensorflow/tfjs";
-import React, { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import type GameStateService from "~/components/GameStateService";
 import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
 import { Orchestrator } from "~/components/reinforcement-learning/orchestrator";
@@ -31,17 +31,30 @@ export const TrainAndTestSection = ({
 	const [testState, setTestState] = useState(false);
 	const [trainingProgress, setTrainingProgress] = useState("");
 
+	const renderDuringTrainingId = useId();
+	const iterationProgressId = useId();
+	const trainStatusId = useId();
+	const gameProgressId = useId();
+	const iterationStatusId = useId();
+	const stepsContainerId = useId();
+
 	const disableModelControls = useCallback(() => {
 		setTrainButtonText("Stop");
 		modelOptions.setIsTestButtonDisabled(true);
 		modelOptions.setIsDeleteStoredModelButtonDisabled(true);
-	}, []);
+	}, [
+		modelOptions.setIsDeleteStoredModelButtonDisabled,
+		modelOptions.setIsTestButtonDisabled,
+	]);
 
 	const enableModelControls = useCallback(() => {
 		setTrainButtonText("Train");
 		modelOptions.setIsTestButtonDisabled(false);
 		modelOptions.setIsDeleteStoredModelButtonDisabled(false);
-	}, []);
+	}, [
+		modelOptions.setIsDeleteStoredModelButtonDisabled,
+		modelOptions.setIsTestButtonDisabled,
+	]);
 
 	const onIterationEnd = useCallback(
 		(iterationCount: number, totalIterations: number) => {
@@ -58,6 +71,47 @@ export const TrainAndTestSection = ({
 			setGameStatus("Updating weights...");
 		}
 	}, []);
+
+	const trainAndRender = useCallback(async () => {
+		onGameEnd(0, modelOptions.gamesPerIteration);
+		if (policyNet) {
+			let memory = new Memory(modelOptions.maxStepsPerGame);
+			for (let i = 0; i < modelOptions.gamesPerIteration; ++i) {
+				if (stopRequested) {
+					break;
+				}
+
+				gameStateService.refreshGame();
+				const orchestrator = new Orchestrator(
+					policyNet,
+					memory,
+					modelOptions.discountRate,
+					modelOptions.learningRate,
+					modelOptions.maxStepsPerGame,
+					gameStateService,
+					modelOptions.maxEpsilon,
+					modelOptions.minEpsilon,
+					modelOptions.lambda,
+					setTrainingProgress,
+				);
+				await orchestrator.run();
+				onGameEnd(i + 1, modelOptions.gamesPerIteration);
+				memory = new Memory(modelOptions.maxStepsPerGame);
+			}
+		}
+	}, [
+		modelOptions.gamesPerIteration,
+		policyNet,
+		modelOptions.discountRate,
+		modelOptions.learningRate,
+		modelOptions.maxStepsPerGame,
+		gameStateService,
+		modelOptions.maxEpsilon,
+		modelOptions.minEpsilon,
+		modelOptions.lambda,
+		onGameEnd,
+		stopRequested,
+	]);
 
 	const train = useCallback(async () => {
 		if (trainButtonText === "Stop") {
@@ -123,6 +177,15 @@ export const TrainAndTestSection = ({
 		modelOptions.learningRate,
 		renderDuringTraining,
 		policyNet,
+		disableModelControls,
+		enableModelControls,
+		gameStateService.beforeEvening,
+		modelOptions.maxEpsilon,
+		modelOptions.minEpsilon,
+		onGameEnd,
+		onIterationEnd,
+		stopRequested,
+		trainAndRender,
 	]);
 
 	const test = useCallback(() => {
@@ -146,45 +209,14 @@ export const TrainAndTestSection = ({
 		} else {
 			gameStateService.stopTest();
 		}
-	}, [testState, policyNet]);
-
-	const trainAndRender = useCallback(async () => {
-		onGameEnd(0, modelOptions.gamesPerIteration);
-		if (policyNet) {
-			let memory = new Memory(modelOptions.maxStepsPerGame);
-			for (let i = 0; i < modelOptions.gamesPerIteration; ++i) {
-				if (stopRequested) {
-					break;
-				}
-
-				gameStateService.refreshGame();
-				const orchestrator = new Orchestrator(
-					policyNet,
-					memory,
-					modelOptions.discountRate,
-					modelOptions.learningRate,
-					modelOptions.maxStepsPerGame,
-					gameStateService,
-					modelOptions.maxEpsilon,
-					modelOptions.minEpsilon,
-					modelOptions.lambda,
-					setTrainingProgress,
-				);
-				await orchestrator.run();
-				onGameEnd(i + 1, modelOptions.gamesPerIteration);
-				memory = new Memory(modelOptions.maxStepsPerGame);
-			}
-		}
 	}, [
-		modelOptions.gamesPerIteration,
+		testState,
 		policyNet,
-		modelOptions.discountRate,
-		modelOptions.learningRate,
-		modelOptions.maxStepsPerGame,
 		gameStateService,
-		modelOptions.maxEpsilon,
-		modelOptions.minEpsilon,
 		modelOptions.lambda,
+		modelOptions.maxEpsilon,
+		modelOptions.maxStepsPerGame,
+		modelOptions.minEpsilon,
 	]);
 
 	const toggleSkipRender = useCallback(() => {
@@ -198,7 +230,7 @@ export const TrainAndTestSection = ({
 		<>
 			<div className="input-div">
 				<InputGroup
-					id="renderDuringTraining"
+					id={renderDuringTrainingId}
 					label="Render during training"
 					value={renderDuringTraining ? "Yes" : "No"}
 					onChange={() => toggleSkipRender()}
@@ -240,22 +272,22 @@ export const TrainAndTestSection = ({
 				<p className="section-head">Training Progress</p>
 				<div className="with-rows">
 					<div className="status">
-						<label htmlFor="iterationProgress" id="train-status">
+						<label htmlFor={iterationProgressId} id={trainStatusId}>
 							Iteration #: {iterationStatus}
 						</label>
 						<progress
-							id="iterationProgress"
+							id={iterationProgressId}
 							value={iterationProgress}
 							max="100"
 						/>
 					</div>
 					<div className="status">
-						<label htmlFor="gameProgress" id="iteration-status">
+						<label htmlFor={gameProgressId} id={iterationStatusId}>
 							Game #: {gameStatus}
 						</label>
-						<progress id="gameProgress" value={gameProgress} max="100" />
+						<progress id={gameProgressId} value={gameProgress} max="100" />
 					</div>
-					<div id="stepsContainer" />
+					<div id={stepsContainerId} />
 				</div>
 			</section>
 		</>

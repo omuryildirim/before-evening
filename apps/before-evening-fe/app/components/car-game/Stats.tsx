@@ -1,5 +1,6 @@
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: <not needed> */
+/** biome-ignore-all lint/nursery/useUniqueElementIds: <not needed> */
 import type { Stats } from "@before-evening/game-engine";
-import type React from "react";
 import { useEffect, useRef, useState } from "react";
 
 const StatsComponent = ({ stats }: { stats: Stats }) => {
@@ -91,7 +92,7 @@ const StatsComponent = ({ stats }: { stats: Stats }) => {
 				>
 					{Array.from({ length: 74 }).map((_, i) => (
 						<span
-							// biome-ignore lint: <explanation>
+							// biome-ignore lint: <key has to be index>
 							key={i}
 							style={{
 								width: "1px",
@@ -137,7 +138,7 @@ const StatsComponent = ({ stats }: { stats: Stats }) => {
 				>
 					{Array.from({ length: 74 }).map((_, i) => (
 						<span
-							// biome-ignore lint: <explanation>
+							// biome-ignore lint: <key has to be index>
 							key={i}
 							style={{
 								width: "1px",
