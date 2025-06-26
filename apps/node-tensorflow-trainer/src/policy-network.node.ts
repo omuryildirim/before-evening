@@ -1,5 +1,3 @@
-import * as tf from "@tensorflow/tfjs-node";
-
 import {
 	ACTIVATION,
 	LOSS,
@@ -9,6 +7,7 @@ import {
 	SaveablePolicyNetwork,
 	type SaveablePolicyNetworkParams,
 } from "@before-evening/shared";
+import * as tf from "@tensorflow/tfjs-node";
 
 export class SaveableNodePolicyNetwork extends SaveablePolicyNetwork {
 	constructor({

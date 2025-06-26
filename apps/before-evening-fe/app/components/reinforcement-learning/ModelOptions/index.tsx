@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { InputGroup } from "~/components/reinforcement-learning/InputGroup";
 
 interface Props {
@@ -33,13 +34,21 @@ export const ModelOptions = ({
 	maxEpsilon,
 	setMaxEpsilon,
 }: Props) => {
+	const numberOfIterationsId = useId();
+	const gamesPerIterationId = useId();
+	const maxStepsPerGameId = useId();
+	const learningRateId = useId();
+	const discountRateId = useId();
+	const minEpsilonId = useId();
+	const maxEpsilonId = useId();
+
 	return (
 		<>
 			<p className="section-head">Training Parameters</p>
 			<div className="with-rows">
 				<div className="input-div">
 					<InputGroup
-						id="numberOfIterations"
+						id={numberOfIterationsId}
 						label="Number of iterations"
 						value={numberOfIterations}
 						onChange={(e) => setNumberOfIterations(e.target.value)}
@@ -47,14 +56,14 @@ export const ModelOptions = ({
 				</div>
 				<div className="input-div">
 					<InputGroup
-						id="gamesPerIteration"
+						id={gamesPerIterationId}
 						label="Games per iteration"
 						value={gamesPerIteration}
 						onChange={(e) => setGamesPerIteration(e.target.valueAsNumber)}
 					/>
 				</div>
 				<InputGroup
-					id="maxStepsPerGame"
+					id={maxStepsPerGameId}
 					label="Max. steps per game"
 					value={maxStepsPerGame}
 					onChange={(e) => setMaxStepsPerGame(e.target.valueAsNumber)}
@@ -63,7 +72,7 @@ export const ModelOptions = ({
 			<div className="with-cols">
 				<div className="input-div">
 					<InputGroup
-						id="learningRate"
+						id={learningRateId}
 						label="Learning rate"
 						value={learningRate}
 						onChange={(e) => setLearningRate(e.target.valueAsNumber)}
@@ -71,7 +80,7 @@ export const ModelOptions = ({
 				</div>
 				<div className="input-div">
 					<InputGroup
-						id="discountRate"
+						id={discountRateId}
 						label="Discount rate"
 						value={discountRate}
 						onChange={(e) => setDiscountRate(e.target.valueAsNumber)}
@@ -81,7 +90,7 @@ export const ModelOptions = ({
 			<div className="with-cols">
 				<div className="input-div">
 					<InputGroup
-						id="minEpsilon"
+						id={minEpsilonId}
 						label={
 							<>
 								Min epsilon (
@@ -98,7 +107,7 @@ export const ModelOptions = ({
 				</div>
 				<div className="input-div">
 					<InputGroup
-						id="maxEpsilon"
+						id={maxEpsilonId}
 						label={
 							<>
 								Max epsilon (

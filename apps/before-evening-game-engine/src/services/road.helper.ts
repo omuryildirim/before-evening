@@ -1,5 +1,6 @@
 import { COLORS } from "../constants/colors.constant";
 import { SPRITES } from "../constants/sprites.constants";
+import type { Car } from "../interfaces/car.interface";
 import type {
 	CameraAxis,
 	PlayerScreen,
@@ -7,8 +8,6 @@ import type {
 } from "../interfaces/segment.interface";
 import type { Sprite } from "../interfaces/sprite.interface";
 import { Utils } from "../lib/utils";
-
-import type { Car } from "../interfaces/car.interface";
 import { Render } from "./render";
 import type { StateService } from "./state.service";
 

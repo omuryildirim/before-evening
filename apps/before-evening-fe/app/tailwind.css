@@ -177,12 +177,15 @@ body {
 		@media only screen and (min-device-width: 320px) and (
 				max-device-width: 480px
 			) {
+			/* biome-ignore lint/style/noDescendingSpecificity: <not sure> */
 			.with-cols {
 				flex-direction: column;
 			}
+			/* biome-ignore lint/style/noDescendingSpecificity: <not sure> */
 			.with-cols > * {
 				flex: auto;
 			}
+			/* biome-ignore lint/style/noDescendingSpecificity: <not sure> */
 			.tfjs-example-container {
 				padding: 20px;
 			}
@@ -250,7 +253,9 @@ body {
 		.out-example,
 		.in-type,
 		.out-type {
-			font-family: Roboto Mono, monospace;
+			font-family:
+				Roboto Mono,
+				monospace;
 			display: inline-block;
 			padding: 0px 6px 0px 6px;
 			border-radius: 4px;

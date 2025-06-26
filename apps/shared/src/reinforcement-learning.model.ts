@@ -1,6 +1,5 @@
-import * as tf from "@tensorflow/tfjs";
-
 import type { StateUpdate } from "@before-evening/game-engine";
+import * as tf from "@tensorflow/tfjs";
 
 import { ACTIVATION, LOSS, OPTIMIZER } from "./constants";
 

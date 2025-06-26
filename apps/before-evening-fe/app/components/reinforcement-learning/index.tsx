@@ -1,5 +1,5 @@
 import { SaveablePolicyNetwork } from "@before-evening/shared";
-import React, { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type GameStateService from "~/components/GameStateService";
 import { CreateAndDeleteModelSection } from "~/components/reinforcement-learning/CreateAndDeleteModelSection";
 import { ModelOptions } from "~/components/reinforcement-learning/ModelOptions";
@@ -7,8 +7,8 @@ import { useModelOptions } from "~/components/reinforcement-learning/ModelOption
 import { TrainAndTestSection } from "~/components/reinforcement-learning/TrainAndTestSection";
 import {
 	LOCAL_STORAGE_MODEL_PATH,
-	MODEL_SAVE_PATH,
 	localStorageModelName,
+	MODEL_SAVE_PATH,
 	preTrainedModelName,
 } from "./constants";
 
@@ -48,7 +48,10 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 		setModelSavePath(
 			localStorageModelExists ? LOCAL_STORAGE_MODEL_PATH : MODEL_SAVE_PATH,
 		);
-	}, []);
+	}, [
+		modelOptions.setIsCreateModelButtonDisabled,
+		modelOptions.setIsDeleteStoredModelButtonDisabled,
+	]);
 
 	useEffect(() => {
 		initializeView().then();
@@ -69,8 +72,6 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			modelOptions.setIsTestButtonDisabled(false);
 		},
 		[
-			setLocalStorageModel,
-			setStoredModelStatus,
 			modelOptions.setIsDeleteStoredModelButtonDisabled,
 			modelOptions.setIsCreateModelButtonDisabled,
 			modelOptions.setIsHiddenLayerSizeInputDisabled,
@@ -90,13 +91,18 @@ const ReinforcementLearningComponent = ({ gameStateService }: Params) => {
 			loadedPolicyNet.hiddenLayerSizes() as number,
 		);
 		processModelDetails(modelSavePath);
-	}, [modelOptions.maxStepsPerGame, modelSavePath]);
+	}, [
+		modelOptions.maxStepsPerGame,
+		modelSavePath,
+		modelOptions.setHiddenLayerSize,
+		processModelDetails,
+	]);
 
 	useEffect(() => {
 		if (modelSavePath) {
 			loadModel().then();
 		}
-	}, [modelSavePath]);
+	}, [modelSavePath, loadModel]);
 
 	return (
 		<div className="tfjs-example-container centered-container">

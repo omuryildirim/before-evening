@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useRef, useState } from "react";
-import GameStateService from "~/components/GameStateService";
 import CarGame from "~/components/car-game";
+import GameStateService from "~/components/GameStateService";
 import ReinforcementLearning from "~/components/reinforcement-learning";
 
 export const meta: MetaFunction = () => {
