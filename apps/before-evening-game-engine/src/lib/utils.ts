@@ -1,5 +1,5 @@
 export const Utils = {
-	timestamp: () => new Date().getTime(),
+	timestamp: () => Date.now(),
 	toInt: (obj, def) => {
 		if (obj !== null) {
 			const x = Number.parseInt(obj, 10);

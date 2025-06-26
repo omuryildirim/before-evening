@@ -5,10 +5,9 @@ import { Game } from "../helpers/game";
 import type { StateUpdate } from "../interfaces";
 import type { Car } from "../interfaces/car.interface";
 import type { Segment } from "../interfaces/segment.interface";
+import type { Sprite } from "../interfaces/sprite.interface";
 import type { Stats } from "../lib/stats";
 import { Utils } from "../lib/utils";
-
-import type { Sprite } from "../interfaces/sprite.interface";
 import { Render } from "./render";
 
 export class StateService {

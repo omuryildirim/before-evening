@@ -1,11 +1,10 @@
 import { BACKGROUND } from "../constants/background.constant";
 import { COLORS } from "../constants/colors.constant";
 import { SPRITES } from "../constants/sprites.constants";
+import type { Car } from "../interfaces/car.interface";
 import type { Segment, SegmentColorMap } from "../interfaces/segment.interface";
 import type { Sprite } from "../interfaces/sprite.interface";
 import { Utils } from "../lib/utils";
-
-import type { Car } from "../interfaces/car.interface";
 import type { StateService } from "./state.service";
 
 export class Render {
