@@ -25,7 +25,7 @@
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20250906.0",
+    "@cloudflare/workers-types": "4.20250913.0",
     "@remix-run/dev": "2.17.0",
     "@tailwindcss/postcss": "4.1.13",
     "@types/react": "18.3.20",
@@ -36,7 +36,7 @@
     "typescript": "5.9.2",
     "vite": "7.1.5",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.34.0"
+    "wrangler": "4.37.0"
   },
   "engines": {
     "node": ">=20.0.0"
