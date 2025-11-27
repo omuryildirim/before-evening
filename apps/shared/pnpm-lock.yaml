@@ -25,8 +25,8 @@ importers:
         specifier: 4.2.9
         version: 4.2.9
       '@types/webgl2':
-        specifier: 0.0.11
-        version: 0.0.11
+        specifier: 0.0.12
+        version: 0.0.12
 
 packages:
 
@@ -90,8 +90,8 @@ packages:
   '@types/seedrandom@2.4.34':
     resolution: {integrity: sha512-ytDiArvrn/3Xk6/vtylys5tlY6eo7Ane0hvcx++TKo6RxQXuVfW0AF/oeWqAj9dN29SyhtawuXstgmPlwNcv/A==}
 
-  '@types/webgl2@0.0.11':
-    resolution: {integrity: sha512-LFa4je4lUbqDVRNeC2W1ZRM8dOgsGsm23MZO7m/EllCVg07yB65W3eUF4MAM+0LU9X6x/0NTrvXxAW0pmipNdw==}
+  '@types/webgl2@0.0.12':
+    resolution: {integrity: sha512-42qYzEoJ1yQlDNWSwtJmQKUKAoYv25mjsxKXhwn4/1qlG3Xlr8t8EK/2771dVi5ytw/KX5XwwG5L8lNxLf6qSQ==}
 
   '@webgpu/types@0.1.38':
     resolution: {integrity: sha512-7LrhVKz2PRh+DD7+S+PVaFd5HxaWQvoMqBbsV9fNJO1pjUs1P8bM2vQVNfk+3URTqbuTI7gkXi0rfsN0IadoBA==}
@@ -384,7 +384,7 @@ snapshots:
 
   '@types/seedrandom@2.4.34': {}
 
-  '@types/webgl2@0.0.11': {}
+  '@types/webgl2@0.0.12': {}
 
   '@webgpu/types@0.1.38': {}
 
