@@ -110,7 +110,10 @@ updates:
       non-major-deps:
         # Define patterns to include dependencies in the group (based on dependency name)
         patterns:
-          - '*' # A wildcard that matches all dependencies in the package (may open a large pull request)
+          - '@biomejs/biome'
+          - 'turbo'
+          - 'ts-node'
+          - 'typescript'
         update-types: # Exclude major version updates from group
           - 'minor'
           - 'patch'
