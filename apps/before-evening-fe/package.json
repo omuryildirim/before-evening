@@ -16,7 +16,7 @@
   "dependencies": {
     "@remix-run/cloudflare": "2.17.3",
     "@remix-run/cloudflare-pages": "2.17.3",
-    "@remix-run/react": "2.17.3",
+    "@remix-run/react": "2.17.4",
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*",
     "isbot": "5.1.32",
