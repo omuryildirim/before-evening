@@ -20,7 +20,7 @@
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*",
     "isbot": "5.1.35",
-    "react": "18.3.1",
+    "react": "19.2.4",
     "react-dom": "18.3.1",
     "@tensorflow/tfjs": "4.22.0"
   },
@@ -28,7 +28,7 @@
     "@cloudflare/workers-types": "4.20260214.0",
     "@remix-run/dev": "2.17.4",
     "@tailwindcss/postcss": "4.1.18",
-    "@types/react": "18.3.20",
+    "@types/react": "19.2.14",
     "@types/react-dom": "18.3.6",
     "autoprefixer": "10.4.24",
     "postcss": "8.5.6",
