@@ -25,7 +25,7 @@
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260214.0",
+    "@cloudflare/workers-types": "4.20260301.1",
     "@remix-run/dev": "2.17.4",
     "@tailwindcss/postcss": "4.1.18",
     "@types/react": "18.3.20",
