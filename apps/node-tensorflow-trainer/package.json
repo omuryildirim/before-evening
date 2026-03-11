@@ -16,7 +16,7 @@
     "train": "tsx ./src/index.ts"
   },
   "engines": {
-    "node": ">=10"
+    "node": ">=22"
   },
   "dependencies": {
     "@before-evening/game-engine": "workspace:*",
@@ -29,7 +29,7 @@
     "ora": "8.2.0",
     "tsx": "4.21.0"
   },
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "pnpm@10.28.0",
   "files": [
     "build/main",
     "build/module",
