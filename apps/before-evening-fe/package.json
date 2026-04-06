@@ -19,13 +19,13 @@
     "@remix-run/react": "2.17.4",
     "@before-evening/game-engine": "workspace:*",
     "@before-evening/shared": "workspace:*",
-    "isbot": "5.1.36",
+    "isbot": "5.1.37",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260317.1",
+    "@cloudflare/workers-types": "4.20260405.1",
     "@remix-run/dev": "2.17.4",
     "@tailwindcss/postcss": "4.2.2",
     "@types/react": "18.3.20",
@@ -36,7 +36,7 @@
     "typescript": "5.9.3",
     "vite": "7.3.1",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.76.0"
+    "wrangler": "4.80.0"
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {
