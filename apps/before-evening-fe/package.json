@@ -25,18 +25,18 @@
     "@tensorflow/tfjs": "4.22.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "4.20260420.1",
+    "@cloudflare/workers-types": "4.20260426.1",
     "@remix-run/dev": "2.17.4",
-    "@tailwindcss/postcss": "4.2.2",
+    "@tailwindcss/postcss": "4.2.4",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
     "autoprefixer": "10.5.0",
-    "postcss": "8.5.10",
-    "tailwindcss": "4.2.2",
+    "postcss": "8.5.12",
+    "tailwindcss": "4.2.4",
     "typescript": "5.9.3",
     "vite": "7.3.1",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.83.0"
+    "wrangler": "4.85.0"
   },
   "packageManager": "pnpm@10.28.0",
   "engines": {
