@@ -25,9 +25,9 @@
     "@tensorflow/tfjs-node": "4.22.0"
   },
   "devDependencies": {
-    "@types/node": "25.5.0",
+    "@types/node": "25.8.0",
     "ora": "8.2.0",
-    "tsx": "4.21.0"
+    "tsx": "4.22.1"
   },
   "packageManager": "pnpm@10.28.0",
   "files": [
