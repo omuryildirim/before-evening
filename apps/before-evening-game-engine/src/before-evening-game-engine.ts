@@ -18,7 +18,7 @@ export class BeforeEveningGameEngine {
 	public stateUpdate: Subject<StateUpdate>;
 	public stats: Stats;
 
-	constructor(type?: "straight") {
+	constructor(type?: "straight" | "sharp-curves") {
 		this.state = new StateService();
 		this.stats = this.state.stats;
 		this.roadHelper = new RoadHelper(this.state);

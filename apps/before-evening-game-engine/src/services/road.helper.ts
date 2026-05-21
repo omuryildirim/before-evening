@@ -187,7 +187,7 @@ export class RoadHelper {
 		);
 	}
 
-	public resetRoad(type?: "straight") {
+	public resetRoad(type?: "straight" | "sharp-curves") {
 		this.state.segments.splice(0, this.state.segments.length);
 
 		switch (type) {
@@ -202,6 +202,9 @@ export class RoadHelper {
 					0,
 					-this.lastY() / this.state.segmentLength,
 				);
+				break;
+			case "sharp-curves":
+				this.addSharpCurveTrack();
 				break;
 			default:
 				this.addDefaultRoad();
@@ -231,6 +234,86 @@ export class RoadHelper {
 
 		this.state.trackLength =
 			this.state.segments.length * this.state.segmentLength;
+	}
+
+	// Curve-focused track used for targeted training. Heavy on CURVE.HARD turns —
+	// both isolated and stacked into S-curves, with and without elevation — so the
+	// model is forced to learn that braking before a corner stays on the road.
+	private addSharpCurveTrack() {
+		this.addStraight(ROAD.LENGTH.SHORT);
+
+		// Isolated hard corners with short straights between for recovery
+		this.addCurve(ROAD.LENGTH.SHORT, ROAD.CURVE.HARD, ROAD.HILL.NONE);
+		this.addStraight(ROAD.LENGTH.SHORT);
+		this.addCurve(ROAD.LENGTH.SHORT, -ROAD.CURVE.HARD, ROAD.HILL.NONE);
+		this.addStraight(ROAD.LENGTH.SHORT);
+
+		// Hard corners combined with elevation changes
+		this.addCurve(ROAD.LENGTH.MEDIUM, ROAD.CURVE.HARD, ROAD.HILL.LOW);
+		this.addStraight(ROAD.LENGTH.SHORT);
+		this.addCurve(ROAD.LENGTH.MEDIUM, -ROAD.CURVE.HARD, -ROAD.HILL.LOW);
+		this.addStraight(ROAD.LENGTH.SHORT);
+
+		// Hard S-curves with hills — direction flips back-to-back
+		this.addRoad(
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.CURVE.HARD,
+			ROAD.HILL.MEDIUM,
+		);
+		this.addRoad(
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			-ROAD.CURVE.HARD,
+			-ROAD.HILL.MEDIUM,
+		);
+		this.addRoad(
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.CURVE.HARD,
+			ROAD.HILL.LOW,
+		);
+		this.addRoad(
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			ROAD.LENGTH.SHORT,
+			-ROAD.CURVE.HARD,
+			-ROAD.HILL.LOW,
+		);
+
+		// Sustained hard curves — must hold a line through a long corner
+		this.addCurve(ROAD.LENGTH.LONG, ROAD.CURVE.HARD, ROAD.HILL.NONE);
+		this.addStraight(ROAD.LENGTH.SHORT);
+		this.addCurve(ROAD.LENGTH.LONG, -ROAD.CURVE.HARD, ROAD.HILL.NONE);
+		this.addStraight(ROAD.LENGTH.SHORT);
+
+		// Mixed: medium → hard transition (tests anticipation)
+		this.addCurve(ROAD.LENGTH.MEDIUM, ROAD.CURVE.MEDIUM, ROAD.HILL.NONE);
+		this.addCurve(ROAD.LENGTH.MEDIUM, ROAD.CURVE.HARD, ROAD.HILL.NONE);
+		this.addStraight(ROAD.LENGTH.SHORT);
+		this.addCurve(ROAD.LENGTH.MEDIUM, -ROAD.CURVE.MEDIUM, ROAD.HILL.NONE);
+		this.addCurve(ROAD.LENGTH.MEDIUM, -ROAD.CURVE.HARD, ROAD.HILL.NONE);
+
+		// Final hard S-curves with strong elevation
+		this.addRoad(
+			ROAD.LENGTH.MEDIUM,
+			ROAD.LENGTH.MEDIUM,
+			ROAD.LENGTH.MEDIUM,
+			-ROAD.CURVE.HARD,
+			ROAD.HILL.HIGH,
+		);
+		this.addRoad(
+			ROAD.LENGTH.MEDIUM,
+			ROAD.LENGTH.MEDIUM,
+			ROAD.LENGTH.MEDIUM,
+			ROAD.CURVE.HARD,
+			-ROAD.HILL.MEDIUM,
+		);
+
+		this.addDownhillToEnd(null);
 	}
 
 	private addDefaultRoad() {
