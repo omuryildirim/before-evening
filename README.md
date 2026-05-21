@@ -60,6 +60,15 @@ pnpm run build
 node ./build/main/index.js
 ```
 
+#### Targeted training for sharp corners
+The default reward function and track teach the model to drive flat-out, which fails
+on the hardest corners. A curve-aware reward + an opt-in curve-heavy track let you
+fine-tune the existing model so it learns to brake for sharp turns.
+```
+cd apps/node-tensorflow-trainer
+TRACK_TYPE=sharp-curves pnpm train
+```
+
 # Theory
 Q-learning is a simple way for agents to learn how to act optimally in controlled Markovian
 domains. It amounts to an incremental method for dynamic programming which imposes limited computational
