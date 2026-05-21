@@ -1,8 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
-    "build": {},
-    "typecheck": {},
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**", "build/client/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
     "lint:fix": {}
   }
 }
