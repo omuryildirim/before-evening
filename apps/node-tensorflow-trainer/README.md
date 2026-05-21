@@ -41,6 +41,16 @@ To get started with the TensorFlow trainer module, follow these steps:
 - `train`: Trains the TensorFlow model.
 - `lint`: Lints the codebase.
 
+## Targeted training for sharp corners
+
+Set `TRACK_TYPE=sharp-curves` to fine-tune the existing model on a curve-heavy
+track with a curve-aware reward function. Epsilon and iteration count are
+auto-adjusted for fine-tuning.
+
+```bash
+TRACK_TYPE=sharp-curves pnpm train
+```
+
 ## License
 
 This project is licensed under the MIT License.

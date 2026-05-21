@@ -11,8 +11,16 @@ import ora, { type Ora } from "ora";
 import { MODEL_SAVE_PATH } from "./constants";
 import { SaveableNodePolicyNetwork } from "./policy-network.node";
 
-const MIN_EPSILON = 0.5;
-const MAX_EPSILON = 0.8;
+// TRACK_TYPE=sharp-curves enables targeted fine-tuning on a curve-heavy track.
+// Lower epsilon range in that mode because we're refining an existing model
+// rather than exploring from scratch.
+const TRACK_TYPE = process.env.TRACK_TYPE as
+	| "straight"
+	| "sharp-curves"
+	| undefined;
+const IS_SHARP_CURVE_MODE = TRACK_TYPE === "sharp-curves";
+const MIN_EPSILON = IS_SHARP_CURVE_MODE ? 0.1 : 0.5;
+const MAX_EPSILON = IS_SHARP_CURVE_MODE ? 0.3 : 0.8;
 
 class NodeTensorflow {
 	private policyNet: SaveableNodePolicyNetwork;
@@ -30,7 +38,7 @@ class NodeTensorflow {
 
 	constructor() {
 		this.hiddenLayerSize = 1024;
-		this.numberOfIterations = "50";
+		this.numberOfIterations = IS_SHARP_CURVE_MODE ? "20" : "50";
 		this.gamesPerIteration = 100;
 		this.maxStepsPerGame = 1000;
 		this.discountRate = 0.95;
@@ -69,7 +77,13 @@ class NodeTensorflow {
 			await this.createModel();
 		}
 
-		this.beforeEvening = new BeforeEveningGameEngine();
+		this.beforeEvening = new BeforeEveningGameEngine(TRACK_TYPE);
+		if (TRACK_TYPE) {
+			console.log(`Track type: ${TRACK_TYPE}`);
+			console.log(
+				`Epsilon range: ${MIN_EPSILON} - ${MAX_EPSILON} (fine-tuning)`,
+			);
+		}
 
 		await this.train();
 	}
