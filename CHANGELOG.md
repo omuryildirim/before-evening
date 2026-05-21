@@ -1,3 +1,14 @@
+## [1.1.0] - 2026-05-22
+
+### Added
+- Curve-aware reward function: speed reward now scales with upcoming curvature, so braking into sharp corners is no longer penalized. Backward-compatible — on straights the formula collapses to the previous reward, so existing trained models remain valid starting points.
+- `sharp-curves` track variant in the game engine, exercising `CURVE.HARD` segments with elevation changes and S-curve transitions for targeted training on tight corners.
+- `TRACK_TYPE=sharp-curves` env var on the Node trainer for targeted fine-tuning; automatically lowers the epsilon range to 0.1–0.3 and reduces iteration count.
+
+### Changed
+- Pinned Node.js to `>=22 <23` across all workspaces; `engine-strict=true` in `.npmrc` and `.nvmrc` enforce this locally.
+- Turbo `build` and `typecheck` tasks now declare `dependsOn: ["^build"]` so workspaces build in dependency order from a clean state.
+
 ## [1.0.0] - 2025-04-25
 
 ### Changed

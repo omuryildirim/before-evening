@@ -1,6 +1,6 @@
 {
   "name": "@before-evening/shared",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Shared function for Before Evening",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
