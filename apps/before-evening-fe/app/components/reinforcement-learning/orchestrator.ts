@@ -95,6 +95,7 @@ export class Orchestrator {
 					const reward = ReinforcementLearningModel.computeReward(
 						rawState.playerX,
 						rawState.speed,
+						rawState.next5Curve,
 					);
 
 					// Keep the car on max position if reached
@@ -142,6 +143,10 @@ export class Orchestrator {
 		let bestAction = 0;
 		let bestReward = -10000000000;
 
+		// testAction returns a hypothetical playerX/speed but no curves; pull the
+		// real upcoming curves from the live state so the reward calc matches training.
+		const liveState = this.gameStateService.beforeEvening.getState();
+
 		for (const testAction of [-1, 0, 1, 2, 3, 4, 5]) {
 			const rawState = this.gameStateService.beforeEvening.testAction(
 				convertActionToKeyboardKeyNumber(testAction),
@@ -149,6 +154,7 @@ export class Orchestrator {
 			const reward = ReinforcementLearningModel.computeReward(
 				rawState.playerX,
 				rawState.speed,
+				liveState.next5Curve,
 			);
 
 			if (reward > bestReward) {
