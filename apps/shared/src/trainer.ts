@@ -72,6 +72,7 @@ const runOneEpisode = async ({
 		let previousReward = ReinforcementLearningModel.computeReward(
 			rawState.playerX,
 			rawState.speed,
+			rawState.next5Curve,
 		);
 		while (remainingSteps) {
 			// Exponentially decay the exploration parameter
@@ -97,6 +98,7 @@ const runOneEpisode = async ({
 			const reward = ReinforcementLearningModel.computeReward(
 				rawState.playerX,
 				rawState.speed,
+				rawState.next5Curve,
 			);
 
 			const relativeReward = ReinforcementLearningModel.computeRelativeReward({
@@ -104,6 +106,7 @@ const runOneEpisode = async ({
 				previousReward,
 				x: rawState.playerX,
 				speed: rawState.speed,
+				next5Curve: rawState.next5Curve,
 			});
 
 			// add sample to memory
@@ -207,6 +210,7 @@ const createNewDatasetPoint = ({
 		const reward = ReinforcementLearningModel.computeReward(
 			rawState.playerX,
 			rawState.speed,
+			state.next5Curve,
 		);
 
 		if (reward > bestReward) {

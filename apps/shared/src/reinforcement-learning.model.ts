@@ -129,7 +129,33 @@ export class ReinforcementLearningModel {
 		return tf.tensor2d([[state.playerX, ...state.next5Curve, state.speed]]);
 	}
 
-	public static computeReward(position: number, speed: number) {
+	// Matches CURVE.HARD from the game engine road helper.
+	private static readonly HARD_CURVE_VALUE = 6;
+
+	// Ideal normalized speed (0..1) given the upcoming curvature: straights = 1.0,
+	// hardest upcoming curves = 0.5. Backwards compatible: omitting next5Curve
+	// (or all-zero curves) yields 1.0, restoring the original "always full throttle" target.
+	public static computeIdealSpeed(next5Curve?: number[]): number {
+		if (!next5Curve || next5Curve.length === 0) {
+			return 1;
+		}
+		let maxAbsCurve = 0;
+		for (const c of next5Curve) {
+			const abs = Math.abs(c);
+			if (abs > maxAbsCurve) maxAbsCurve = abs;
+		}
+		const curveSeverity = Math.min(
+			1,
+			maxAbsCurve / ReinforcementLearningModel.HARD_CURVE_VALUE,
+		);
+		return 1 - 0.5 * curveSeverity;
+	}
+
+	public static computeReward(
+		position: number,
+		speed: number,
+		next5Curve?: number[],
+	) {
 		let reward: number;
 		// position can be between -3:3
 		// if position is not in range -1:1 that means car is out of bounds
@@ -142,8 +168,11 @@ export class ReinforcementLearningModel {
 			reward = 100 - 90 * Math.abs(position);
 		}
 
-		// max minus 50 reward if speed is not max
-		reward -= 50 * (1 - speed);
+		// Penalize deviation from the curvature-aware ideal speed. On straights this
+		// reduces to -50 * (1 - speed) — identical to the original; on sharp turns
+		// the ideal speed drops, so braking into corners is no longer punished.
+		const idealSpeed = ReinforcementLearningModel.computeIdealSpeed(next5Curve);
+		reward -= 50 * Math.abs(speed - idealSpeed);
 
 		return reward;
 	}
@@ -153,11 +182,13 @@ export class ReinforcementLearningModel {
 		previousReward,
 		x,
 		speed,
+		next5Curve,
 	}: {
 		reward: number;
 		previousReward: number;
 		x: number;
 		speed: number;
+		next5Curve?: number[];
 	}) {
 		// relative reward is the evaluation of current state compared to previous state
 		// in this way we hope to evaluate the action based on the change happened
@@ -169,9 +200,13 @@ export class ReinforcementLearningModel {
 		// But in practice the action have a negative impact on car's movement.
 		const relativeReward = reward - previousReward;
 
-		// if relative reward is zero and car is not at the center of road or speed is not at max
-		// then return min possible reward
-		if (relativeReward === 0 && (x !== 0 || speed !== 1)) {
+		// if relative reward is zero and car is not already at the ideal state
+		// (centered + curvature-aware ideal speed) then return min possible reward
+		const idealSpeed = ReinforcementLearningModel.computeIdealSpeed(next5Curve);
+		if (
+			relativeReward === 0 &&
+			(x !== 0 || Math.abs(speed - idealSpeed) > 0.01)
+		) {
 			return -100;
 		}
 
