@@ -52,8 +52,8 @@ importers:
         specifier: 18.3.6
         version: 18.3.6(@types/react@18.3.20)
       autoprefixer:
-        specifier: 10.5.0
-        version: 10.5.0(postcss@8.5.14)
+        specifier: 10.5.2
+        version: 10.5.2(postcss@8.5.14)
       postcss:
         specifier: 8.5.14
         version: 8.5.14
@@ -1522,8 +1522,8 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
-  autoprefixer@10.5.0:
-    resolution: {integrity: sha512-FMhOoZV4+qR6aTUALKX2rEqGG+oyATvwBt9IIzVR5rMa2HRWPkxf+P+PAJLD1I/H5/II+HuZcBJYEFBpq39ong==}
+  autoprefixer@10.5.2:
+    resolution: {integrity: sha512-rD5t5DwOjJdmSORcTq64j8MawTC+tbQ+HHqjR4NDumamy/ambn1UJrlKL+KdwujWxMkFjPM3pPHOEA9tl4767Q==}
     engines: {node: ^10 || ^12 || >=14}
     hasBin: true
     peerDependencies:
@@ -1544,6 +1544,11 @@ packages:
 
   baseline-browser-mapping@2.10.20:
     resolution: {integrity: sha512-1AaXxEPfXT+GvTBJFuy4yXVHWJBXa4OdbIebGN/wX5DlsIkU0+wzGnd2lOzokSk51d5LUmqjgBLRLlypLUqInQ==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
+  baseline-browser-mapping@2.10.40:
+    resolution: {integrity: sha512-BSSLZ9/Cjjv7Gtj5B68ZzXcXUg8iOf3fme+FCuh8rC/Go+Kmh8cox7M3A8dolou16s64QjLPOSdngh7GxXvkSw==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -1573,6 +1578,11 @@ packages:
 
   browserslist@4.28.2:
     resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
+    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+    hasBin: true
+
+  browserslist@4.28.4:
+    resolution: {integrity: sha512-MTc8i/x9jBQd1iMw2CFGS+rwMa07eYjLR0CCTLDACl9xhxy+nIs3KeML/biicXtk9JrZ6dnnTatmc7ErPXIxqw==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -1608,6 +1618,9 @@ packages:
 
   caniuse-lite@1.0.30001788:
     resolution: {integrity: sha512-6q8HFp+lOQtcf7wBK+uEenxymVWkGKkjFpCvw5W25cmMwEDU45p1xQFBQv8JDlMMry7eNxyBaR+qxgmTUZkIRQ==}
+
+  caniuse-lite@1.0.30001799:
+    resolution: {integrity: sha512-hG1bReV+OUU+MOqK4t/ZWI0tZOyz3rqS9XuhOUz1cIcbwBKjOyJEJuw9ER5JuNyqxNk8u/JUVbGibBOL1yrjFw==}
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -1828,6 +1841,9 @@ packages:
 
   electron-to-chromium@1.5.340:
     resolution: {integrity: sha512-908qahOGocRMinT2nM3ajCEM99H4iPdv84eagPP3FfZy/1ZGeOy2CZYzjhms81ckOPCXPlW7LkY4XpxD8r1DrA==}
+
+  electron-to-chromium@1.5.380:
+    resolution: {integrity: sha512-W6d5AbuEoRayO447cqrg6lKJIlscgRnnxOZl/08kfV71BQDoEBC7Wwis68z87LjyK6f4kWyTaubuDbhHKrZkbA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -2678,6 +2694,10 @@ packages:
 
   node-releases@2.0.37:
     resolution: {integrity: sha512-1h5gKZCF+pO/o3Iqt5Jp7wc9rH3eJJ0+nh/CIoiRwjRxde/hAHyLPXYN4V3CqKAbiZPSeJFSWHmJsbkicta0Eg==}
+
+  node-releases@2.0.50:
+    resolution: {integrity: sha512-J6l92tKHX6w8Jy5nO1Vuc01NoIiRGi/d6qBKVxh+IQ8Cr3b6HbVNfKiF8ZpFKufTwpwxMmce2W3iQZ861ZRyTg==}
+    engines: {node: '>=18'}
 
   normalize-package-data@5.0.0:
     resolution: {integrity: sha512-h9iPVIfrVZ9wVYQnxFgtw1ugSvGEMOlyPWWtm8BMJhnwyEL/FLbYbTY3V3PpjI/BUK67n9PEWDu6eHzu1fB15Q==}
@@ -4843,10 +4863,10 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  autoprefixer@10.5.0(postcss@8.5.14):
+  autoprefixer@10.5.2(postcss@8.5.14):
     dependencies:
-      browserslist: 4.28.2
-      caniuse-lite: 1.0.30001788
+      browserslist: 4.28.4
+      caniuse-lite: 1.0.30001799
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.14
@@ -4863,6 +4883,8 @@ snapshots:
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.10.20: {}
+
+  baseline-browser-mapping@2.10.40: {}
 
   binary-extensions@2.3.0: {}
 
@@ -4911,6 +4933,14 @@ snapshots:
       node-releases: 2.0.37
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
+  browserslist@4.28.4:
+    dependencies:
+      baseline-browser-mapping: 2.10.40
+      caniuse-lite: 1.0.30001799
+      electron-to-chromium: 1.5.380
+      node-releases: 2.0.50
+      update-browserslist-db: 1.2.3(browserslist@4.28.4)
+
   buffer-from@1.1.2: {}
 
   buffer@5.7.1:
@@ -4955,6 +4985,8 @@ snapshots:
       get-intrinsic: 1.3.0
 
   caniuse-lite@1.0.30001788: {}
+
+  caniuse-lite@1.0.30001799: {}
 
   ccount@2.0.1: {}
 
@@ -5119,6 +5151,8 @@ snapshots:
   ee-first@1.1.1: {}
 
   electron-to-chromium@1.5.340: {}
+
+  electron-to-chromium@1.5.380: {}
 
   emoji-regex@8.0.0: {}
 
@@ -6207,6 +6241,8 @@ snapshots:
 
   node-releases@2.0.37: {}
 
+  node-releases@2.0.50: {}
+
   normalize-package-data@5.0.0:
     dependencies:
       hosted-git-info: 6.1.3
@@ -6957,6 +6993,12 @@ snapshots:
   update-browserslist-db@1.2.3(browserslist@4.28.2):
     dependencies:
       browserslist: 4.28.2
+      escalade: 3.2.0
+      picocolors: 1.1.1
+
+  update-browserslist-db@1.2.3(browserslist@4.28.4):
+    dependencies:
+      browserslist: 4.28.4
       escalade: 3.2.0
       picocolors: 1.1.1
 
